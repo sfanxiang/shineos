@@ -13,5 +13,9 @@ $(OUTPUT)/booter : boot/booter.asm boot/includes/mbrdata.inc boot/includes/std.i
 	$(NASM) boot/booter.asm -Iboot/includes/ -o $(TEMP)/booter.tmp -E
 	$(NASM) $(TEMP)/booter.tmp -o $(OUTPUT)/booter
 
+init :
+	mkdir output
+	mkdir temp
+
 clean :
 	rm -r $(TEMP)/*
