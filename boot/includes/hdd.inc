@@ -1,4 +1,4 @@
-;/boot/includes/hdd.inc
+;boot/includes/hdd.inc
 ;real mode
 
 struc DriveParametersPacket
@@ -25,9 +25,12 @@ GetDriveParameters:
 	
 	jc %%Failed
 	mov ax,0
-	ret
+	jmp %%Return
 %%Failed:
 	movsx ax,ah
+
+%%Return:
+	pop di
 	ret
 %endif
 %endmacro

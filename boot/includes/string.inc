@@ -28,9 +28,10 @@ btoa:
 	mov ds,ax
 	mov es,ax
 	mov si,sp
+	add sp,cx
+
 	cld
 	rep movsb
-	add sp,cx
 	ret
 %endif
 %endmacro
@@ -65,9 +66,10 @@ stoa:
 	mov ds,ax
 	mov es,ax
 	mov si,sp
+	add sp,cx
+
 	cld
 	rep movsb
-	add sp,cx
 	pop ebx
 	ret
 %endif
@@ -103,9 +105,10 @@ itoa:
 	mov ds,ax
 	mov es,ax
 	mov si,sp
+	add sp,cx
+
 	cld
 	rep movsb
-	add sp,cx
 	pop ebx
 	ret
 %endif
