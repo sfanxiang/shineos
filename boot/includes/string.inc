@@ -7,7 +7,10 @@
 btoa:
 	mov si,sp
 	mov di,[ss:si+2]
-	push byte 0
+	
+	dec sp
+	mov byte [ss:si-1],0
+
 	mov al,cl
 	mov cx,1
 %%BeginDiv:
@@ -26,6 +29,7 @@ btoa:
 	
 	mov ax,ss
 	mov ds,ax
+	mov ax,cs
 	mov es,ax
 	mov si,sp
 	add sp,cx
@@ -44,7 +48,11 @@ stoa:
 	mov di,[ss:si+2]
 	push ebx
 	movsx bx,dl
-	push 0
+	
+	dec sp
+	mov si,sp
+	mov byte [ss:si],0
+
 	mov ax,cx
 	mov cx,1
 %%BeginDiv:
@@ -64,6 +72,7 @@ stoa:
 	
 	mov ax,ss
 	mov ds,ax
+	mov ax,cs
 	mov es,ax
 	mov si,sp
 	add sp,cx
@@ -83,7 +92,11 @@ itoa:
 	mov di,[ss:si+2]
 	push ebx
 	movsx ebx,dl
-	push 0
+
+	dec sp
+	mov si,sp
+	mov byte [ss:si],0
+
 	mov eax,ecx
 	mov cx,1
 %%BeginDiv:
@@ -103,6 +116,7 @@ itoa:
 	
 	mov ax,ss
 	mov ds,ax
+	mov ax,cs
 	mov es,ax
 	mov si,sp
 	add sp,cx

@@ -2,15 +2,15 @@
 ;real mode
 
 struc DriveParametersPacket
-	.Size resw 30
-	.Flags resw 0
-	.Cylinders resd 0
-	.Heads resd 0
-	.SectorsPerTrack resd 0
-	.Sectors resq 0
-	.BytesPerSector resw 0
-	.EDD_Offset resw 0
-	.EDD_Segment resw 0
+	.Size resb 2
+	.Flags resb 2
+	.Cylinders resb 4
+	.Heads resb 4
+	.SectorsPerTrack resb 4
+	.Sectors resb 8
+	.BytesPerSector resb 2
+	.EDD_Offset resb 2
+	.EDD_Segment resb 2
 endstruc
 
 %macro func_GetDriveParameters 0
@@ -19,6 +19,7 @@ endstruc
 GetDriveParameters:
 	push di	
 	mov di,dx
+	mov word [di],30
 	mov dl,cl
 	mov ah,0x48
 	int 0x13
