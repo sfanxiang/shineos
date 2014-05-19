@@ -9,9 +9,21 @@ NASM_OUT = -o
 OUTPUT = output
 TEMP = temp
 
-$(OUTPUT)/booter : boot/booter.asm boot/includes/mbrdata.inc boot/includes/std.inc boot/includes/display.inc boot/includes/hdd.inc boot/includes/string.inc
-	$(NASM) boot/booter.asm -Iboot/includes/ -o $(TEMP)/booter.tmp -E
-	$(NASM) $(TEMP)/booter.tmp -o $(OUTPUT)/booter
+.PHONY : boot
+
+boot : $(TEMP)/booter $(TEMP)/loader $(OUTPUT)/bootloader
+
+$(TEMP)/booter : boot/booter.asm boot/includes/mbrdata.inc boot/includes/std.inc boot/includes/display.inc boot/includes/hdd.inc
+	$(NASM) boot/booter.asm -Iboot/includes/ -o $@.tmp -E
+	$(NASM) $@.tmp -o $@
+
+
+$(TEMP)/loader : boot/loader.asm boot/includes/mbrdata.inc boot/includes/std.inc boot/includes/display.inc boot/includes/hdd.inc boot/includes/string.inc
+	$(NASM) boot/loader.asm -Iboot/includes/ -o $@.tmp -E
+	$(NASM) $@.tmp -o $@
+
+$(OUTPUT)/bootloader : $(TEMP)/booter $(TEMP)/loader
+	cat $(TEMP)/booter $(TEMP)/loader > $@
 
 init :
 	mkdir output

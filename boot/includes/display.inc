@@ -1,5 +1,5 @@
 ;boot/includes/display.inc
-;for booting
+;real mode
 
 %macro func_putchar 0
 %ifndef _boot_includes_display_inc_func_putchar_
