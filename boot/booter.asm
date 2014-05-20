@@ -4,7 +4,6 @@
 
 %include "std.inc"
 %include "display.inc"
-%include "hdd.inc"
 
 [bits 16]
 [org 0x7c00]
@@ -18,118 +17,45 @@
 ;Booter
 label_startboot:
 	cli
-	push dx
 
 	xor ax,ax
 	mov ss,ax
-	mov sp,0xffff
+	mov sp,0xf000
 
-	mov cx,msg_boot
-	mov dx,0x700
-	call printstring
+	push dx
+
+	mov ah,0
+	int 0x13
+	jc error
 	
-@comment
-	mov ax,0x1000
-	mov ds,ax
-	mov cl,0x80
-	mov dx,0
-	call GetDriveParameters
-
-	cmp al,0
-	jne Label_ErrGetDriveParameters
-
-	mov ax,0x1000
-	mov ds,ax
-	mov cx,[DriveParametersPacket.BytesPerSector]
-	mov dl,10
-	push Msg_Number
-	call stoa
-
-	mov cx,Msg_Number
-	mov dx,0x700
-	call printstring
-
-	mov cx,Msg_NewLine
-	mov dx,0x700
-	call printstring
-
-	mov ax,0x1000
-	mov ds,ax
-	mov ecx,[DriveParametersPacket.Sectors]
-	mov dl,10
-	push Msg_Number
-	call itoa
+	xor ax,ax
+	mov es,ax
+	mov bx,0x8000
+	mov ax,0x0203
+	mov cx,2
+	pop dx
+	push dx
+	mov dh,0
+	int 0x13
+	jc error
 	
-	mov cx,Msg_Number
-	mov dx,0x700
-	call printstring
+	jmp 0:0x8000
 
-	jmp Label_ReadFs
-
-Label_ErrGetDriveParameters:
-	mov cx,Msg_ErrGetDriveParameters
+error:
 	mov dx,0x700
+	mov cx,msg_error
 	call printstring
-	mov cx,Msg_Error
-	mov dx,0x700
-	call printstring
-
-	mov cl,al
-	mov dl,10
-	push Msg_Number
-	call btoa
-
-	mov cx,Msg_Number
-	mov dx,0x700
-	call printstring
-@endcomment
-
-	pop cx
-	push cx
-	mov dx,loader
-	call readdrive
-	cmp ax,0
-	je ok
-	
-	mov cx,msg_failedread
-	mov dx,0x700
-	call printstring
+	sti
+@@
 	hlt
+	jmp @b
 
-ok:	jmp 0:0x8000
-
-msg_boot db 'ShineOS booter v0.01',0xa,0xd
-	db 'Booting...',0xa,0xd
-	db 0xa,0xd,0
-msg_failedread db 'Failed reading drive!',0xa,0xd
-
-loader:
-istruc dap
-	at dap.size, db 0x10
-	at dap.zero, db 0
-	at dap.sectors, dw 3
-	at dap.offset, dw 0x8000
-	at dap.segment, dw 0
-	at dap.startsector, dq 1
-iend
-
-@comment
-msg_error db 'Error Code: ',0
-Msg_Number dq 0
-Msg_ErrGetDriveParameters db 'Failed getting drive parameters!',0xa,0xd,0
-@endcomment
+msg_error db '(shineos booter,mbr):',0xd,0xa
+	db 'Something wrong happend.',0xd,0xa
+	db 'System halted.',0xd,0xa,0
 
 ;used functions
 	func_printstring
-	func_readdrive
-	;func_putchar
-@comment
-	func_GetDriveParameters
-	func_btoa
-	func_stoa
-	func_itoa
-@endcomment
-
 ;End of sector
 	times 510-($-$$) db 0
 	dw 0xaa55

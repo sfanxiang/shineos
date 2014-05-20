@@ -13,7 +13,7 @@ TEMP = temp
 
 boot : $(TEMP)/booter $(TEMP)/loader $(OUTPUT)/bootloader
 
-$(TEMP)/booter : boot/booter.asm boot/includes/mbrdata.inc boot/includes/std.inc boot/includes/display.inc boot/includes/hdd.inc
+$(TEMP)/booter : boot/booter.asm boot/includes/mbrdata.inc boot/includes/std.inc boot/includes/display.inc
 	$(NASM) boot/booter.asm -Iboot/includes/ -o $@.tmp -E
 	$(NASM) $@.tmp -o $@
 

@@ -26,3 +26,6 @@ msg_load db 'ShineOS loader v0.01',0xa,0xd
 
 ;used functions
 	func_printstring
+
+;end of loader
+	times 0x600-($-$$) db 0
