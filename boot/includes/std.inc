@@ -1,5 +1,5 @@
 ;boot/includes/std.inc
-;standard things
+;shineos
 
 %ifndef _boot_includes_std_inc_included_
 	%define _boot_includes_std_inc_included_
@@ -17,6 +17,6 @@
 	%endmacro
 
 ;@comment, @endcomment support
-	%define @comment %ifdef _disable_comment_
+	%define @comment %if 0
 	%define @endcomment %endif
 %endif
