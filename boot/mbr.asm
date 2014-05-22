@@ -35,8 +35,16 @@ label_searchbootnext:
 	jmp label_searchbootpart
 
 label_foundbootpart:
-	jmp $
-
+	mov [cs:boot_part_entry],di
+	mov cx,label_pbrldrend-label_pbrldr
+	mov ax,0
+	mov ds,ax
+	mov es,ax
+	mov di,0x8000
+	mov si,label_pbrldr
+	cld
+	rep movsb
+	jmp 0:0x8000
 
 times 218-($-code0) db 0
 
@@ -48,6 +56,13 @@ minutes db 0
 hours db 0
 
 code1:
+label_pbrldr:
+	jmp $
+boot_part_entry dw 0
+	;unfinished
+	;todo
+
+label_pbrldrend:
 label_error:
 	sti
 	mov cx,msg_introduction
