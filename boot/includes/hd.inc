@@ -27,21 +27,22 @@ endstruc
 %ifndef _boot_includes_hdd_inc_func_readdrive
 %define _boot_includes_hdd_inc_func_readdrive
 readdrive:
-	push si
+	pusha
 	mov si,dx
 	mov dl,cl
 	mov ax,cs
 	mov ds,ax
-	mov ax,0x42
+	mov ah,0x42
 	int 0x13
 	jc %%error
 
+	popa
 	mov ax,0
 	jmp %%return
 %%error:
+	popa
 	movsx ax,ah
 %%return:
-	pop si
 	ret
 %endif
 %endmacro

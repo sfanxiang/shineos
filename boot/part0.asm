@@ -1,7 +1,6 @@
-;boot/mbr.asm
-;shineos mbr
+;boot/part0.asm
+;sldr part0
 
-[org 0x7c00]
 [bits 16]
 %include "display.inc"
 %include "hd.inc"
@@ -10,41 +9,54 @@
 code0:
 	jmp label_start
 	nop
+	
+readdrivepack:
+istruc dap
+	at dap.size,db 0x10
+	at dap.zero,db 0
+	at dap.sectors,dw 1
+	at dap.offset,dw 0
+	at dap.segment,dw 0x800
+	at dap.startsector,dq 1
+iend
+	
 reserved times 32-($-code0) db 0
 label_start:
+	jmp 0x7c0:label_jump
+label_jump:
 	cli
+
+	mov ax,0
+	mov ss,ax
+	mov sp,0xf000
 
 	mov [cs:init_dx],dx
 	mov [cs:init_es],es
 	mov [cs:init_di],di
 	
+	mov cx,msg_introduction
+	mov dx,0x700
+	call printstring
+
+	mov dl,[cs:init_dx]
 	mov ah,0
 	int 0x13
 	jc label_diskerror
 
-	mov di,part0+part_entry.status
-	mov cx,0
-label_searchbootpart:
-	cmp cx,4
-	jnb label_nobootpart
-	cmp byte [cs:di],0x80
-	jnz label_searchbootnext
-	jmp label_foundbootpart
-label_searchbootnext:
-	inc cx
-	jmp label_searchbootpart
+	mov cl,[cs:init_dx]
+	mov dx,readdrivepack
+	call readdrive
+	cmp ax,0
+	jnz label_diskerror
 
-label_foundbootpart:
-	mov [cs:boot_part_entry],di
-	mov cx,label_pbrldrend-label_pbrldr
-	mov ax,0
-	mov ds,ax
-	mov es,ax
-	mov di,0x8000
-	mov si,label_pbrldr
-	cld
-	rep movsb
-	jmp 0:0x8000
+	mov cx,msg_ok
+	mov dx,0x700
+	call printstring
+
+	mov dx,[cs:init_dx]
+	mov es,[cs:init_es]
+	mov di,[cs:init_di]
+	jmp 0x800:0
 
 times 218-($-code0) db 0
 
@@ -56,41 +68,23 @@ minutes db 0
 hours db 0
 
 code1:
-label_pbrldr:
-	jmp $
-boot_part_entry dw 0
-	;unfinished
-	;todo
-
-label_pbrldrend:
-label_error:
-	sti
-	mov cx,msg_introduction
-	mov dx,0x700
-	call printstring
-	ret
 label_diskerror:
-	call label_error
 	mov cx,msg_diskerror
 	mov dx,0x700
 	call printstring
-	jmp $
-label_nobootpart:
-	call label_error
-	mov cx,msg_nobootpart
-	mov dx,0x700
-	call printstring
+
 	jmp $
 
 init_dx dw 0
 init_es dw 0
 init_di dw 0
 
-msg_introduction db '(shineos,mbr):',0xd,0xa,0
+msg_introduction db 'SLDR(part0):',0xd,0xa,0
+msg_ok db 'Ok. Now loading part 1.',0xd,0xa,0
 msg_diskerror db 'Something wrong with disk operation.',0xd,0xa,0
-msg_nobootpart db 'No bootable partition.',0xd,0xa,0
 ;used functions
 	func_printstring
+	func_readdrive
 
 times 216-($-code1) db 0
 sign dd 0
@@ -149,5 +143,6 @@ istruc part_entry
 	at part_entry.first_lba,dd 0
 	at part_entry.sectors,dd 0
 iend
+
 ;boot signature
 dw 0xaa55

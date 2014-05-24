@@ -5,13 +5,13 @@
 %ifndef _boot_includes_display_inc_func_putchar_
 %define _boot_includes_display_inc_func_putchar_
 putchar:
-	push bx
+	pusha
 	mov al,cl
 	mov bh,dl
 	mov bl,dh
 	mov ah,0xe
 	int 10h
-	pop bx
+	popa
 	ret
 %endif
 %endmacro
