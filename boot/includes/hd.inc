@@ -37,11 +37,12 @@ readdrive:
 	jc %%error
 
 	popa
-	mov ax,0
+	mov al,0
 	jmp %%return
 %%error:
 	popa
-	movsx ax,ah
+	mov al,0xff
+	jmp %%return
 %%return:
 	ret
 %endif

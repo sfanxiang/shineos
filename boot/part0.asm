@@ -7,7 +7,7 @@
 %include "std.inc"
 
 code0:
-	jmp label_start
+	jmp short label_start
 	nop
 	
 readdrivepack:
@@ -33,9 +33,10 @@ label_jump:
 	mov [cs:init_dx],dx
 	mov [cs:init_es],es
 	mov [cs:init_di],di
-	
+
+	call cls
 	mov cx,msg_introduction
-	mov dx,0x700
+	mov dx,7
 	call printstring
 
 	mov dl,[cs:init_dx]
@@ -46,17 +47,20 @@ label_jump:
 	mov cl,[cs:init_dx]
 	mov dx,readdrivepack
 	call readdrive
-	cmp ax,0
+	cmp al,0
 	jnz label_diskerror
 
 	mov cx,msg_ok
-	mov dx,0x700
+	mov dx,7
 	call printstring
 
 	mov dx,[cs:init_dx]
 	mov es,[cs:init_es]
 	mov di,[cs:init_di]
 	jmp 0x800:0
+
+msg_introduction db 'SLDR(part0):',0xd,0xa,0
+msg_ok db 'OK. Now loading part 1.',0xd,0xa,0
 
 times 218-($-code0) db 0
 
@@ -68,21 +72,27 @@ minutes db 0
 hours db 0
 
 code1:
+label_syshalt:
+	mov cx,msg_syshalt
+	mov dl,7
+	call printstring
+	sti
+	jmp $
 label_diskerror:
 	mov cx,msg_diskerror
-	mov dx,0x700
+	mov dl,7
 	call printstring
+	jmp label_syshalt
 
-	jmp $
+msg_syshalt db 'System halted.',0xd,0xa,0
+msg_diskerror db 'Something wrong with disk operation.',0xd,0xa,0
 
 init_dx dw 0
 init_es dw 0
 init_di dw 0
 
-msg_introduction db 'SLDR(part0):',0xd,0xa,0
-msg_ok db 'Ok. Now loading part 1.',0xd,0xa,0
-msg_diskerror db 'Something wrong with disk operation.',0xd,0xa,0
 ;used functions
+	func_cls
 	func_printstring
 	func_readdrive
 
