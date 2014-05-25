@@ -11,20 +11,15 @@ TEMP = temp
 
 .PHONY : boot
 
-boot : $(TEMP)/part0 $(TEMP)/part1 $(OUTPUT)/hdsample
+boot : $(TEMP)/sldr $(OUTPUT)/hdsample
 
-$(TEMP)/part0 : boot/part0.asm boot/includes/display.inc boot/includes/std.inc boot/includes/hd.inc
-	$(NASM) $< -Iboot/includes/ -o $(TEMP)/part0.tmp -E
-	$(NASM) $(TEMP)/part0.tmp -o $@
+$(TEMP)/sldr : boot/sldr.asm boot/includes/display.inc boot/includes/std.inc boot/includes/hd.inc boot/includes/fs.inc
+	$(NASM) $< -Iboot/includes/ -o $(TEMP)/sldr.tmp -E
+	$(NASM) $(TEMP)/sldr.tmp -o $@
 
-$(TEMP)/part1 : boot/part1.asm
-	$(NASM) $< -Iboot/includes/ -o $(TEMP)/part1.tmp -E
-	$(NASM) $(TEMP)/part1.tmp -o $@
-
-$(OUTPUT)/hdsample : $(TEMP)/part0 $(TEMP)/part1
+$(OUTPUT)/hdsample : $(TEMP)/sldr
 	dd if=/dev/zero of=$@ bs=512 count=2048
-	dd if=$(TEMP)/part0 of=$@ conv=notrunc
-	dd if=$(TEMP)/part1 of=$@ seek=512 oflag=seek_bytes conv=notrunc
+	dd if=$(TEMP)/sldr of=$@ conv=notrunc
 
 init :
 	mkdir output

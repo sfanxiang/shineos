@@ -1,6 +1,14 @@
-;boot/includes/hdd.inc
+;boot/includes/hd.inc
 ;real mode
 
+struc dap
+	.size resb 1
+	.zero resb 1
+	.sectors resb 2
+	.offset resb 2
+	.segment resb 2
+	.startsector resb 8
+endstruc
 struc part_entry
 	.status resb 1	;0x00:inactive,0x80:active
 	.first_head resb 1
@@ -12,15 +20,6 @@ struc part_entry
 	.last_cylinder resb 1
 	.first_lba resb 4
 	.sectors resb 4
-endstruc
-
-struc dap
-	.size resb 1
-	.zero resb 1
-	.sectors resb 2
-	.offset resb 2
-	.segment resb 2
-	.startsector resb 8
 endstruc
 
 %macro func_readdrive 0
