@@ -154,7 +154,6 @@ label_code2:
 	nop
 
 readdrivepack1:
-loaderdap:
 istruc dap
 	at dap.size,db 0x10
 	at dap.zero,db 0
