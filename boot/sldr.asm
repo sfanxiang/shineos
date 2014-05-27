@@ -32,7 +32,7 @@ label_jump:
 
 	mov ax,0x7c0
 	mov ss,ax
-	mov sp,0xf000
+	mov sp,0xe000
 
 	mov [cs:init_dx],dx
 	mov [cs:init_es],es
@@ -213,7 +213,7 @@ foundbootable:
 	mov dl,[cs:init_dx]
 	call initfs
 
-	cmp al,0
+	cmp ax,0
 	jnz @f
 	
 	mov cx,msg_fserror
@@ -225,6 +225,7 @@ pfs dd 0
 
 @@
 	jmp label_syshalt
+	;todo
 
 ;used functions
 	func_initfs
