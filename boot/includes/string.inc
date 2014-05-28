@@ -128,4 +128,37 @@ itoa:
 %endif
 %endmacro
 
+%macro func_findchar 0
+%ifndef _boot_includes_string_inc_func_findchar_
+%define _boot_includes_string_inc_func_findchar_
+;_in_  cx: point to the string
+;_in_  dl: char to find
+;_in_  dh: search from
+;_out_ ax: index of the first char
+findchar:
+	push si
+	mov ax,cs
+	mov ds,ax
+	mov si,cx
+	movsx ax,dh
+	add si,ax
+	cld
+%%search:
+	lodsb
+	cmp al,0
+	jz %%failed
+	cmp al,dl
+	jnz %%search
+	sub si,cx
+	sub si,1
+	mov ax,si
+	pop si
+	ret
+%%failed:
+	mov ax,-1
+	pop si
+	ret
+%endif
+%endmacro
+
 ;end of file
