@@ -70,7 +70,7 @@ iend
 %ifndef _boot_includes_fs_inc_func_readfile_
 %define _boot_includes_fs_inc_func_readfile_
 ;_in_  ecx: section number of partition + diskalloc (=start of treealloc)
-;_in_ dx: point to the path
+;_in_  dx: point to the path
 ;_out_ eax: point to the file (start section), or 0 if failed
 readfile:
 	;todo

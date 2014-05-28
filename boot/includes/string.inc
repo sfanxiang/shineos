@@ -134,7 +134,7 @@ itoa:
 ;_in_  cx: point to the string
 ;_in_  dl: char to find
 ;_in_  dh: search from
-;_out_ ax: index of the first char
+;_out_ ax: index of the first char, or -1 if failed
 findchar:
 	push si
 	mov ax,cs
