@@ -6,6 +6,7 @@
 %include "fs.inc"
 %include "hd.inc"
 %include "std.inc"
+%include "string.inc"
 
 @@
 ;enable @f

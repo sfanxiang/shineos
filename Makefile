@@ -18,7 +18,7 @@ $(TEMP)/sldr : boot/sldr.asm boot/includes/display.inc boot/includes/std.inc boo
 	$(NASM) $(TEMP)/sldr.tmp -o $@
 
 $(OUTPUT)/hdsample : $(TEMP)/sldr
-	dd if=/dev/zero of=$@ bs=512 count=2048
+	#dd if=/dev/zero of=$@ bs=512 count=2048
 	dd if=$(TEMP)/sldr of=$@ conv=notrunc
 
 init :

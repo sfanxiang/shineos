@@ -5,10 +5,17 @@ struc sdesc
 	.magic resb 2	;should be 'sf'
 	.size resb 4	;sectors
 	.state resb 2
-	.diskalloc resb 4
-	.treealloc resb 4
+	.diskalloc resb 4	;sectors
+	.treealloc resb 4	;sectors
 	.wtime resb 8
 	.name resb 16	;null-terminated string
+endstruc
+struc treedesc
+	.type resb 1
+	.pfile resb 4
+	.pnext resb 4
+	.pchild resb 4
+	.name resb (256-1-4-4-4)
 endstruc
 
 %macro func_initfs 0
@@ -56,5 +63,16 @@ istruc dap
 	at dap.startsector,dq 0
 iend
 	func_readdrive
+%endif
+%endmacro
+
+%macro func_openfile 0
+%ifndef _boot_includes_fs_inc_func_readfile_
+%define _boot_includes_fs_inc_func_readfile_
+;_in_  ecx: section number of partition + diskalloc (=start of treealloc)
+;_in_ dx: point to the path
+;_out_ eax: point to the file (start section), or 0 if failed
+readfile:
+	;todo
 %endif
 %endmacro
