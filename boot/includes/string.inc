@@ -161,4 +161,51 @@ findchar:
 %endif
 %endmacro
 
+%macro func_strcmp 0
+%ifndef _boot_includes_string_inc_func_strcmp_
+%define _boot_includes_string_inc_func_strcmp_
+;_in_  cx: point to 1st string
+;_in_  dx: point to 2nd string
+;_out_ al: <0 for s1<s2, ==0 for s1==s2, >0 for s1>s2
+strcmp:
+	push di
+	push si
+	mov di,cx
+	mov si,dx
+
+%%startcmp:
+	mov al,[cs:di]
+	mov ah,[cs:si]
+
+	cmp al,0
+	jnz %%cmpahzero
+	cmp ah,0
+	jnz %%below
+	
+	mov al,0
+	jmp %%return
+%%cmpahzero:
+	cmp ah,0
+	jz %%above
+
+	cmp al,ah
+	jb %%below
+	ja %%above
+
+	inc di
+	inc si
+	jmp %%startcmp
+	
+%%below:
+	mov al,-1
+	jmp %%return
+%%above:
+	mov al,1
+%%return:
+	pop si
+	pop di
+	ret
+%endif
+%endmacro
+
 ;end of file
