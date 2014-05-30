@@ -37,6 +37,7 @@ btoa:
 	mov ax,ss
 	mov ds,ax
 	mov si,sp
+	cld
 	rep movsb
 
 	mov sp,bp
@@ -85,6 +86,7 @@ stoa:
 	mov ax,ss
 	mov ds,ax
 	mov si,sp
+	cld
 	rep movsb
 
 	mov sp,bp
@@ -133,6 +135,7 @@ itoa:
 	mov ax,ss
 	mov ds,ax
 	mov si,sp
+	cld
 	rep movsb
 
 	mov sp,bp
