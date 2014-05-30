@@ -190,6 +190,7 @@ strcmp:
 	push si
 	push ds
 	push es
+
 	mov di,cx
 	mov si,dx
 	shr ecx,16
@@ -226,8 +227,8 @@ strcmp:
 %%above:
 	mov al,1
 %%return:
+	pop es
 	pop ds
-	pop cs
 	pop si
 	pop di
 	ret
