@@ -54,6 +54,9 @@ label_jump:
 
 	jmp label_code2
 
+;used functions
+	func_cls
+
 times 218-($-label_code0) db 0
 
 zero dw 0
@@ -65,12 +68,16 @@ hours db 0
 
 label_code1:
 label_syshalt:
+	mov cx,cs
+	shl ecx,16
 	mov cx,msg_syshalt
 	mov dl,7
 	call printstring
 	sti
 	jmp $
 label_diskerror:
+	mov cx,cs
+	shl ecx,16
 	mov cx,msg_diskerror
 	mov dl,7
 	call printstring
@@ -84,7 +91,6 @@ init_es dw 0
 init_di dw 0
 
 ;used functions
-	func_cls
 	func_printstring
 	func_readdrive
 
@@ -202,6 +208,8 @@ searchnext:
 	add si,part1-part0
 	loop @b
 
+	mov cx,cs
+	shl cx,16
 	mov cx,msg_nobootable
 	mov dl,7
 	call printstring
@@ -216,7 +224,9 @@ foundbootable:
 
 	cmp ax,0
 	jnz @f
-	
+
+	mov cx,cs
+	shl cx,16
 	mov cx,msg_fserror
 	mov dl,7
 	call printstring

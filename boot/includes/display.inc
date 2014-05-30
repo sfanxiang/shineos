@@ -21,17 +21,22 @@ putchar:
 %define _boot_includes_display_inc_func_printstring_
 printstring:
 	push bx
+	push ds
+
 	mov bx,cx
+	shr ecx,16
+	mov ds,cx
 	
 %%begin:
-	cmp byte [cs:bx],0
+	cmp byte [ds:bx],0
 	je %%exit
 	
-	mov cl,[cs:bx]
+	mov cl,[ds:bx]
 	call putchar
 	inc bx
 	jmp %%begin
 %%exit:
+	pop ds
 	pop bx
 	ret
 	
