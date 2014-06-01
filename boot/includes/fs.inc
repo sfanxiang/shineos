@@ -10,12 +10,23 @@ struc sdesc
 	.wtime resb 8
 	.name resb 16	;null-terminated string
 endstruc
+@define FILE_TYPE_DIR 1
+@define FILE_TYPE_FILE 2
 struc treedesc
 	.type resb 1
-	.pfile resb 4
-	.pnext resb 4
-	.pchild resb 4
-	.name resb (256-1-4-4-4)
+	.attrib resb 2
+	.pfile resb 4	;sector
+	.pprev resb 4	;sector
+	.pnext resb 4	;sector
+	.pparent resb 4	;sector
+	.pchild resb 4	;sector
+	.name resb (512-1-2-4-4-4-4)
+endstruc
+struc filesec
+	.pprev resb 4	;sector
+	.size resb 8
+	.data resb (512-4-8-4)
+	.pnext resb 4	;sector
 endstruc
 
 %macro func_initfs 0
@@ -66,9 +77,18 @@ initfs:
 %ifndef _boot_includes_fs_inc_func_readfile_
 %define _boot_includes_fs_inc_func_readfile_
 ;_in_  ecx: section number of partition + diskalloc (=start of treealloc)
-;_in_  dx: point to the path
+;_in_  edx: point to the path
+;_in_  stack 0-1: drive number	;!!!todo!!!
 ;_out_ eax: point to the file (start section), or 0 if failed
 readfile:
+	push bp
+	mov bp,sp
+	
+	push dword 0
+	push ecx
+	push ss
+	push word 0xf000
+	push dword 0x10010
 	;todo
 %endif
 %endmacro
