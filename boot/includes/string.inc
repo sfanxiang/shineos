@@ -4,21 +4,27 @@
 %macro func_btoa 0
 %ifndef _boot_includes_string_inc_func_btoa_
 %define _boot_includes_string_inc_func_btoa_
-;_in_  cl: number
-;_in_  dl: radix
-;_in_  stack 0-3: point to the string
+;_in_  ecx: point to the string
+;_in_  dl: number
+;_in_  stack 0-1: radix
+;_out_ eax: point to the string
 btoa:
+	push ecx
+	push bp
+	push di
+	push si
+
 	mov bp,sp
 
-	mov si,sp
-	mov ax,[ss:si+4]
-	mov es,ax
-	mov di,[ss:si+2]
+	mov di,cx
+	shr ecx,16
+	mov es,cx
 
 	mov sp,0xfffe
 	mov byte [ss:0xffff],0
 
-	mov al,cl
+	mov al,dl
+	mov dl,[ss:bp+12]
 	mov cx,1
 %%BeginDiv:
 	inc cx
@@ -42,6 +48,10 @@ btoa:
 
 	mov sp,bp
 
+	pop si
+	pop di
+	pop bp
+	pop eax
 	ret
 %endif
 %endmacro
@@ -49,24 +59,28 @@ btoa:
 %macro func_stoa 0
 %ifndef _boot_includes_string_inc_func_stoa_
 %define _boot_includes_string_inc_func_stoa_
-;_in_  cx: number
-;_in_  dl: radix
-;_in_  stack 0-3: point to the string
+;_in_  ecx: point to the string
+;_in_  dx: number
+;_in_  stack 0-1: radix
+;_out_ eax: point to the string
 stoa:
-	mov si,sp
-	
-	push ebx
-	movsx bx,dl
+	push bx
+	push ecx
+	push bp
+	push di
+	push si
+
 	mov bp,sp
 
-	mov ax,[ss:si+4]
-	mov es,ax
-	mov di,[ss:si+2]
+	mov di,cx
+	shr ecx,16
+	mov es,cx
 	
 	mov sp,0xfffe
 	mov byte [ss:0xffff],0
 
-	mov ax,cx
+	mov ax,dx
+	mov bx,[ss:bp+14]
 	mov cx,1
 %%BeginDiv:
 	inc cx
@@ -90,7 +104,12 @@ stoa:
 	rep movsb
 
 	mov sp,bp
-	pop ebx
+
+	pop si
+	pop di
+	pop bp
+	pop eax
+	pop bx
 	ret
 %endif
 %endmacro
@@ -98,24 +117,29 @@ stoa:
 %macro func_itoa 0
 %ifndef _boot_includes_string_inc_func_itoa_
 %define _boot_includes_string_inc_func_itoa_
-;_in_  ecx: number
-;_in_  dl: radix
-;_in_  stack 0-3: point to the string
+;_in_  ecx: point to the string
+;_in_  edx: number
+;_in_  stack 0-1: radix
+;_out_ eax: point to the string
 itoa:
-	mov si,sp
-
 	push ebx
-	movsx ebx,dl
+	push ecx
+	push bp
+	push di
+	push si
+
 	mov bp,sp
 
-	mov ax,[ss:si+4]
-	mov es,ax
-	mov di,[ss:si+2]
+	mov di,cx
+	shr ecx,16
+	mov es,cx
 
 	mov sp,0xfffe
 	mov byte [ss:0xffff],0
 
-	mov eax,ecx
+	mov eax,edx
+	mov bx,[ss:bp+16]
+	and ebx,0xffff
 	mov cx,1
 %%BeginDiv:
 	inc cx
@@ -139,6 +163,11 @@ itoa:
 	rep movsb
 
 	mov sp,bp
+
+	pop si
+	pop di
+	pop bp
+	pop eax
 	pop ebx
 	ret
 %endif

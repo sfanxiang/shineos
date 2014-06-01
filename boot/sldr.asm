@@ -47,6 +47,8 @@ label_jump:
 	jc label_diskerror
 
 	mov cl,[cs:init_dx]
+	mov dx,cs
+	shl edx,16
 	mov dx,readdrivepack0
 	call readdrive
 	cmp al,0
@@ -109,8 +111,8 @@ istruc part_entry
 	at part_entry.last_head,db 0
 	at part_entry.last_sector,db 0
 	at part_entry.last_cylinder,db 0
-	at part_entry.first_lba,dd 0
-	at part_entry.sectors,dd 0
+	at part_entry.first_lba,dd 0x100
+	at part_entry.sectors,dd 1
 iend
 part1:
 istruc part_entry
@@ -171,6 +173,8 @@ istruc dap
 iend
 label_code2_start:
 	mov cl,[cs:init_dx]
+	mov dx,cs
+	shl edx,16
 	mov dx,readdrivepack1
 	call readdrive
 	cmp al,0
@@ -217,13 +221,17 @@ searchnext:
 msg_nobootable db 'No bootable partition with supported file system.',0xd,0xa,0
 
 foundbootable:
-	mov ecx,[cs:si+part_entry.first_lba]
-	mov [cs:pfs],ecx
-	mov dl,[cs:init_dx]
+	mov edx,[cs:si+part_entry.first_lba]
+	mov [cs:pfs],edx
+	mov cx,cs
+	shl ecx,16
+	mov cx,isdesc
+	movsx ax,byte [cs:init_dx]
+	push ax
 	call initfs
 
-	cmp ax,0
-	jnz @f
+	cmp word [cs:isdesc+sdesc.magic],'sf'
+	jz @f
 
 	mov cx,cs
 	shl cx,16
@@ -233,7 +241,16 @@ foundbootable:
 	jmp label_syshalt
 msg_fserror db 'Error occurred when trying to read file system.',0xd,0xa,0
 pfs dd 0
-
+isdesc:
+istruc sdesc
+	at sdesc.magic,dw 0	;should be 'sf'
+	at sdesc.size,dd 0	;sectors
+	at sdesc.state,dw 0
+	at sdesc.diskalloc,dd 0	;sectors
+	at sdesc.treealloc,dd 0	;sectors
+	at sdesc.wtime,dq 0
+	at sdesc.name,dq 0,0	;null-terminated string
+iend
 @@
 	jmp label_syshalt
 	;todo

@@ -25,12 +25,16 @@ endstruc
 %macro func_readdrive 0
 %ifndef _boot_includes_hdd_inc_func_readdrive
 %define _boot_includes_hdd_inc_func_readdrive
+;_in_  cl: drive number
+;_in_  edx: point to the dap
+;_out_ al: 0 if succeed
 readdrive:
+	push ds
 	pusha
 	mov si,dx
+	shr edx,16
+	mov ds,dx
 	mov dl,cl
-	mov ax,cs
-	mov ds,ax
 	mov ah,0x42
 	int 0x13
 	jc %%error
@@ -43,6 +47,7 @@ readdrive:
 	mov al,0xff
 	jmp %%return
 %%return:
+	pop ds
 	ret
 %endif
 %endmacro

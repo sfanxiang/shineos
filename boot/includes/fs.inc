@@ -21,47 +21,43 @@ endstruc
 %macro func_initfs 0
 %ifndef _boot_includes_fs_inc_func_initfs_
 %define _boot_includes_fs_inc_func_initfs_
-;_in_  ecx: first section of a partition
-;_in_  dl: drive number
-;_out_ ax: pointer to a sdesc
+;_in_  ecx: point to a sdesc
+;_in_  edx: first section of a partition
+;_in_  stack 0-1: drive number
+;_out_ eax: point to a sdesc, sdesc.magic=='sf' if succeed 
 initfs:
-	pusha
-	add ecx,64
-	mov [cs:%%readdap+dap.startsector],ecx
-	mov cl,dl
-	mov ax,sp
-	add ax,0x1000
-	mov [cs:%%readdap+dap.offset],ax
-	mov ax,ss
-	mov [cs:%%readdap+dap.segment],ax
-	mov dx,%%readdap
+	push bp
+	push di
+	push ecx
+	mov bp,sp
+
+	add edx,64
+	push dword 0
+	push edx
+	mov ds,cx
+	shr ecx,16
+	mov di,cx
+	push ds
+	push cx
+	push dword 0x10010
+
+	mov cl,[ss:bp+10]
+	mov dx,ss
+	shl edx,16
+	mov dx,sp
 	call readdrive
 	cmp al,0
-	jnz %%error
+	jz %%ok
 
-	mov bp,sp
-	add bp,0x1000
-	cmp word [ss:bp+sdesc.magic],'sf'
-	jnz %%error
-	
-	popa
-	mov ax,sp
-	add ax,0x1000
-	ret
-%%error:
-	popa
-	mov ax,0
+	mov byte [di+sdesc.magic],0
+
+%%ok:
+	mov sp,bp	
+	pop eax
+	pop di
+	pop bp
 	ret
 
-%%readdap:
-istruc dap
-	at dap.size,db 0x10
-	at dap.zero,db 0
-	at dap.sectors,dw 1
-	at dap.offset,dw 0
-	at dap.segment,dw 0
-	at dap.startsector,dq 0
-iend
 	func_readdrive
 %endif
 %endmacro
