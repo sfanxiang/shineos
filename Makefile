@@ -13,7 +13,7 @@ TEMP = temp
 
 boot : $(TEMP)/sldr $(OUTPUT)/hdsample
 
-$(TEMP)/sldr : boot/sldr.asm boot/includes/display.inc boot/includes/std.inc boot/includes/hd.inc boot/includes/fs.inc
+$(TEMP)/sldr : boot/sldr.asm boot/includes/display.inc boot/includes/std.inc boot/includes/hd.inc boot/includes/fs.inc boot/includes/string.inc
 	$(NASM) $< -Iboot/includes/ -o $(TEMP)/sldr.tmp -E
 	$(NASM) $(TEMP)/sldr.tmp -o $@
 

@@ -159,7 +159,7 @@ dw 0xaa55
 
 ;------------------------------------------------
 label_code2:
-	jmp label_code2_start
+	jmp short label_code2_start
 	nop
 
 readdrivepack1:
@@ -186,9 +186,11 @@ dw 0xaa55
 
 ;-------------------------------------------------
 label_code3:
-	jmp label_code3_start
+	jmp near label_code3_start
 	nop
 bootpart db 0xff	;0xff automatically detect bootable partition
+bootcfgfile db '/boot/boot.cfg'
+times 512-($-bootcfgfile) db 0
 
 label_code3_start:
 	cmp byte [cs:bootpart],0xff
@@ -213,7 +215,7 @@ searchnext:
 	loop @b
 
 	mov cx,cs
-	shl cx,16
+	shl ecx,16
 	mov cx,msg_nobootable
 	mov dl,7
 	call printstring
@@ -229,31 +231,61 @@ foundbootable:
 	movsx ax,byte [cs:init_dx]
 	push ax
 	call initfs
+	add sp,2
 
 	cmp word [cs:isdesc+sdesc.magic],'sf'
 	jz @f
 
 	mov cx,cs
-	shl cx,16
+	shl ecx,16
 	mov cx,msg_fserror
 	mov dl,7
 	call printstring
 	jmp label_syshalt
 msg_fserror db 'Error occurred when trying to read file system.',0xd,0xa,0
 pfs dd 0
+
+@@
+	mov ecx,[cs:pfs]
+	add ecx,[cs:isdesc+sdesc.diskalloc]
+	add ecx,65
+	mov dx,cs
+	shl edx,16
+	mov dx,bootcfgfile
+	movsx ax,byte [cs:init_dx]
+	push ax
+	call openfile
+	add sp,2
+
+	cmp eax,0
+	jnz @f
+
+openfileerror:
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_openfileerror
+	mov dl,7
+	call printstring
+	jmp label_syshalt
+msg_openfileerror db 'Failed opening file(s).',0xd,0xa,0
+
+@@
+	jmp $
+
+;used functions
+	func_initfs
+	func_openfile
+
+;big stuffs
 isdesc:
 istruc sdesc
 	at sdesc.magic,dw 0	;should be 'sf'
 	at sdesc.size,dd 0	;sectors
 	at sdesc.state,dw 0
 	at sdesc.diskalloc,dd 0	;sectors
-	at sdesc.treealloc,dd 0	;sectors
+	;at sdesc.treealloc,dd 0	;sectors
 	at sdesc.wtime,dq 0
 	at sdesc.name,dq 0,0	;null-terminated string
 iend
-@@
-	jmp label_syshalt
-	;todo
+;times 512-($-isdesc) db 0
 
-;used functions
-	func_initfs

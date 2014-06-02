@@ -178,7 +178,6 @@ itoa:
 %define _boot_includes_string_inc_func_findchar_
 ;_in_  ecx: point to the string
 ;_in_  dl: char to find
-;_in_  dh: search from
 ;_out_ ax: index of the first char, or -1 if failed
 findchar:
 	push si
@@ -186,8 +185,7 @@ findchar:
 	mov si,cx
 	shr ecx,16
 	mov ds,cx
-	movsx ax,dh
-	add si,ax
+	mov cx,si
 	cld
 %%search:
 	lodsb
@@ -196,7 +194,7 @@ findchar:
 	cmp al,dl
 	jnz %%search
 	sub si,cx
-	sub si,1
+	dec si
 	mov ax,si
 	jmp %%return
 %%failed:
@@ -264,4 +262,28 @@ strcmp:
 %endif
 %endmacro
 
+%macro func_strlen 0
+%ifndef _boot_includes_string_inc_func_strlen_
+%define _boot_includes_string_inc_func_strlen_
+;_in_  ecx: point to the string
+;_out_ ax: length
+strlen:
+	push si
+	mov si,cx
+	shr ecx,16
+	mov ds,cx
+	xor ax,ax
+
+@@
+	cmp byte [si],0
+	jz @f
+	inc ax
+	inc si
+	jmp @b
+
+@@
+	pop si
+	ret
+%endif
+%endmacro
 ;end of file
