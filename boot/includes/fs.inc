@@ -84,51 +84,51 @@ initfs:
 ;_in_  edx: point to the path
 ;_in_  stack 0-1: drive number
 ;_out_ eax: index of the file, or 0 if failed
-%define TREEDESC 0xf000
-%define START (TREEDESC-4)	;section
-%define CURRENT (START-4)	;section
-%define PATH (CURRENT-4)
-%define DRIVE (PATH-1)
-%define NEXTSLASH (DRIVE-2)
-%define CURNAME (NEXTSLASH-512)
+%define _FUNC_OPENFILE_TREEDESC 0xf000
+%define _FUNC_OPENFILE_START (_FUNC_OPENFILE_TREEDESC-4)	;section
+%define _FUNC_OPENFILE_CURRENT (_FUNC_OPENFILE_START-4)	;section
+%define _FUNC_OPENFILE_PATH (_FUNC_OPENFILE_CURRENT-4)
+%define _FUNC_OPENFILE_DRIVE (_FUNC_OPENFILE_PATH-1)
+%define _FUNC_OPENFILE_NEXTSLASH (_FUNC_OPENFILE_DRIVE-2)
+%define _FUNC_OPENFILE_CURNAME (_FUNC_OPENFILE_NEXTSLASH-512)
 openfile:
 	push bp
 	mov bp,sp
 	
-	mov [ss:START],ecx
-	dec dword [ss:START]
-	mov [ss:CURRENT],ecx
-	mov [ss:PATH],edx
+	mov [ss:_FUNC_OPENFILE_START],ecx
+	dec dword [ss:_FUNC_OPENFILE_START]
+	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
+	mov [ss:_FUNC_OPENFILE_PATH],edx
 	mov dl,[ss:bp+4]
-	mov [ss:DRIVE],dl
+	mov [ss:_FUNC_OPENFILE_DRIVE],dl
 	
 	mov ax,0
-	mov [ss:NEXTSLASH],ax
+	mov [ss:_FUNC_OPENFILE_NEXTSLASH],ax
 %%startscan:
-	cmp word [ss:NEXTSLASH],-1
+	cmp word [ss:_FUNC_OPENFILE_NEXTSLASH],-1
 	jz %%endscan
 
-	mov eax,[ss:CURRENT]
-	cmp eax,[ss:START]
+	mov eax,[ss:_FUNC_OPENFILE_CURRENT]
+	cmp eax,[ss:_FUNC_OPENFILE_START]
 	jz %%error
 	
-	mov ecx,[ss:PATH]
+	mov ecx,[ss:_FUNC_OPENFILE_PATH]
 	mov dl,'/'
 	call findchar
-	mov [ss:NEXTSLASH],ax
+	mov [ss:_FUNC_OPENFILE_NEXTSLASH],ax
 	cmp ax,-1
 	jnz @f
 
-	mov ecx,[ss:PATH]
+	mov ecx,[ss:_FUNC_OPENFILE_PATH]
 	call strlen
 	mov cx,ax
 	jmp %%copystr
 @@
-	mov cx,[ss:NEXTSLASH]
+	mov cx,[ss:_FUNC_OPENFILE_NEXTSLASH]
 %%copystr:
-	mov si,[ss:PATH]
-	mov ds,[ss:PATH+2]
-	mov di,CURNAME
+	mov si,[ss:_FUNC_OPENFILE_PATH]
+	mov ds,[ss:_FUNC_OPENFILE_PATH+2]
+	mov di,_FUNC_OPENFILE_CURNAME
 	mov ax,ss
 	mov es,ax
 	cld
@@ -136,12 +136,12 @@ openfile:
 	mov byte [es:di],0
 @@
 	push dword 0
-	push dword [ss:CURRENT]
+	push dword [ss:_FUNC_OPENFILE_CURRENT]
 	push ss
-	push word TREEDESC
+	push word _FUNC_OPENFILE_TREEDESC
 	push dword 0x10010
 
-	mov cl,[ss:DRIVE]
+	mov cl,[ss:_FUNC_OPENFILE_DRIVE]
 	mov dx,ss
 	shl edx,16
 	mov dx,sp
@@ -151,43 +151,51 @@ openfile:
 	cmp al,0
 	jnz %%error
 
-	cmp byte [ss:TREEDESC+treedesc.type],FILE_TYPE_ERROR
+	cmp byte [ss:_FUNC_OPENFILE_TREEDESC+treedesc.type],FILE_TYPE_ERROR
 	jz %%error
 
 	mov cx,ss
 	shl ecx,16
-	mov cx,CURNAME
+	mov cx,_FUNC_OPENFILE_CURNAME
 	mov dx,ss
 	shl edx,16
-	mov dx,TREEDESC+treedesc.name
+	mov dx,_FUNC_OPENFILE_TREEDESC+treedesc.name
 	call strcmp
 
 	cmp al,0
 	jz %%found
 
-	mov ecx,[ss:TREEDESC+treedesc.pnext]
+	mov ecx,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pnext]
 	jecxz %%error
-	add ecx,[ss:START]
-	mov [ss:CURRENT],ecx
+	add ecx,[ss:_FUNC_OPENFILE_START]
+	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
 	jmp @b
 
 %%found:
-	mov ax,[ss:NEXTSLASH]
+	mov ax,[ss:_FUNC_OPENFILE_NEXTSLASH]
 	inc ax
-	add [ss:PATH],ax
-	mov ecx,[ss:TREEDESC+treedesc.pchild]
-	add ecx,[ss:START]
-	mov [ss:CURRENT],ecx
+	add [ss:_FUNC_OPENFILE_PATH],ax
+	mov ecx,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pchild]
+	add ecx,[ss:_FUNC_OPENFILE_START]
+	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
 	jmp %%startscan
 
 %%endscan:
-	mov eax,[ss:TREEDESC+treedesc.pfile]
+	mov eax,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pfile]
 	jmp %%return
 %%error:
 	mov eax,0
 %%return:
 	pop bp
 	ret
+
+%undef _FUNC_OPENFILE_TREEDESC
+%undef _FUNC_OPENFILE_START
+%undef _FUNC_OPENFILE_CURRENT
+%undef _FUNC_OPENFILE_PATH
+%undef _FUNC_OPENFILE_DRIVE
+%undef _FUNC_OPENFILE_NEXTSLASH
+%undef _FUNC_OPENFILE_CURNAME
 
 	func_findchar
 	func_readdrive
