@@ -30,11 +30,14 @@ struc filesec
 	.pnext resb 4	;sector
 endstruc
 
+;section index starts from 1,
+;physical section of 1st index = 1st section number of partition + 64 + diskalloc + 1
+
 %macro func_initfs 0
 %ifndef _boot_includes_fs_inc_func_initfs_
 %define _boot_includes_fs_inc_func_initfs_
 ;_in_  ecx: point to a sdesc (extend to 1 sector(512 bytes))
-;_in_  edx: first section of a partition
+;_in_  edx: first section of the partition
 ;_in_  stack 0-1: drive number
 ;_out_ eax: point to a sdesc, sdesc.magic=='sf' if succeed 
 initfs:
@@ -77,10 +80,10 @@ initfs:
 %macro func_openfile 0
 %ifndef _boot_includes_fs_inc_func_readfile_
 %define _boot_includes_fs_inc_func_readfile_
-;_in_  ecx: section number of partition+64+diskalloc+1 (treedesc of /)
+;_in_  ecx: physical section number of 1st section index (treedesc of /)
 ;_in_  edx: point to the path
 ;_in_  stack 0-1: drive number
-;_out_ eax: point to the file (start section-treedesc of /), or 0 if failed
+;_out_ eax: index of the file, or 0 if failed
 %define TREEDESC 0xf000
 %define START (TREEDESC-4)	;section
 %define CURRENT (START-4)	;section
