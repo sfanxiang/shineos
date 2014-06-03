@@ -278,16 +278,4 @@ msg_openfileerror db 'Failed opening file(s).',0xd,0xa,0
 
 ;big stuffs
 isdesc:
-@comment
-istruc sdesc
-	at sdesc.magic,dw 0	;should be 'sf'
-	at sdesc.size,dd 0	;sectors
-	at sdesc.state,dw 0
-	at sdesc.diskalloc,dd 0	;sectors
-	;at sdesc.treealloc,dd 0	;sectors
-	at sdesc.wtime,dq 0
-	at sdesc.name,dq 0,0	;null-terminated string
-iend
-@endcomment
-;times 512-($-isdesc) db 0
 
