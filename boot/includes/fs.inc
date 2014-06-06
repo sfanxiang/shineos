@@ -10,24 +10,30 @@ struc sdesc
 	.wtime resb 8
 	.name resb 16	;null-terminated string
 endstruc
+struc treedesc
+	.present resb 1	;bool
+	.pfiledesc resb 4
+	.pprev resb 4
+	.pnext resb 4
+	.pparent resb 4
+	.pchild resb 4
+	.name resb (512-1-2-4-4-4-4)
+endstruc
 %define FILE_TYPE_ERROR 0
 %define FILE_TYPE_DIR 1
 %define FILE_TYPE_FILE 2
-struc treedesc
+struc filedesc
 	.type resb 1
-	.attrib resb 2
-	.pfile resb 4	;sector
-	.pprev resb 4	;sector
-	.pnext resb 4	;sector
-	.pparent resb 4	;sector
-	.pchild resb 4	;sector
-	.name resb (512-1-2-4-4-4-4)
-endstruc
-struc filesec
-	.pprev resb 4	;sector
+	.mode resb 4
 	.size resb 8
-	.data resb (512-4-8-4)
-	.pnext resb 4	;sector
+	.pfile resb 4
+endstruc
+%define FILE_BYTES_PER_BLOCK (512-4-4-8-4)
+struc fileblock
+	.pdesc resb 4
+	.pprev resb 4
+	.data resb FILE_BYTES_PER_BLOCK
+	.pnext resb 4
 endstruc
 
 ;section index starts from 1,
@@ -84,8 +90,9 @@ initfs:
 ;_in_  edx: point to the path
 ;_in_  stack 0-1: drive number
 ;_out_ eax: index of the file, or 0 if failed
-%define _FUNC_OPENFILE_TREEDESC 0xf000
-%define _FUNC_OPENFILE_START (_FUNC_OPENFILE_TREEDESC-4)	;section
+;_out_ stack 0-7: file size	;special, preserve space for 8 bytes
+%define _FUNC_OPENFILE_DISKTMP 0xf000
+%define _FUNC_OPENFILE_START (_FUNC_OPENFILE_DISKTMP-4)	;section
 %define _FUNC_OPENFILE_CURRENT (_FUNC_OPENFILE_START-4)	;section
 %define _FUNC_OPENFILE_PATH (_FUNC_OPENFILE_CURRENT-4)
 %define _FUNC_OPENFILE_DRIVE (_FUNC_OPENFILE_PATH-1)
@@ -93,13 +100,15 @@ initfs:
 %define _FUNC_OPENFILE_CURNAME (_FUNC_OPENFILE_NEXTSLASH-512)
 openfile:
 	push bp
+	push di
+	push si
 	mov bp,sp
 	
-	mov [ss:_FUNC_OPENFILE_START],ecx
-	dec dword [ss:_FUNC_OPENFILE_START]
 	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
+	dec ecx
+	mov [ss:_FUNC_OPENFILE_START],ecx
 	mov [ss:_FUNC_OPENFILE_PATH],edx
-	mov dl,[ss:bp+4]
+	mov dl,[ss:bp+2+2+2+2]
 	mov [ss:_FUNC_OPENFILE_DRIVE],dl
 	
 	mov ax,0
@@ -138,7 +147,7 @@ openfile:
 	push dword 0
 	push dword [ss:_FUNC_OPENFILE_CURRENT]
 	push ss
-	push word _FUNC_OPENFILE_TREEDESC
+	push word _FUNC_OPENFILE_DISKTMP
 	push dword 0x10010
 
 	mov cl,[ss:_FUNC_OPENFILE_DRIVE]
@@ -151,7 +160,7 @@ openfile:
 	cmp al,0
 	jnz %%error
 
-	cmp byte [ss:_FUNC_OPENFILE_TREEDESC+treedesc.type],FILE_TYPE_ERROR
+	cmp byte [ss:_FUNC_OPENFILE_DISKTMP+treedesc.present],0
 	jz %%error
 
 	mov cx,ss
@@ -159,13 +168,13 @@ openfile:
 	mov cx,_FUNC_OPENFILE_CURNAME
 	mov dx,ss
 	shl edx,16
-	mov dx,_FUNC_OPENFILE_TREEDESC+treedesc.name
+	mov dx,_FUNC_OPENFILE_DISKTMP+treedesc.name
 	call strcmp
 
 	cmp al,0
 	jz %%found
 
-	mov ecx,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pnext]
+	mov ecx,[ss:_FUNC_OPENFILE_DISKTMP+treedesc.pnext]
 	jecxz %%error
 	add ecx,[ss:_FUNC_OPENFILE_START]
 	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
@@ -175,21 +184,54 @@ openfile:
 	mov ax,[ss:_FUNC_OPENFILE_NEXTSLASH]
 	inc ax
 	add [ss:_FUNC_OPENFILE_PATH],ax
-	mov ecx,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pchild]
+	mov ecx,[ss:_FUNC_OPENFILE_DISKTMP+treedesc.pchild]
 	add ecx,[ss:_FUNC_OPENFILE_START]
 	mov [ss:_FUNC_OPENFILE_CURRENT],ecx
 	jmp %%startscan
 
 %%endscan:
-	mov eax,[ss:_FUNC_OPENFILE_TREEDESC+treedesc.pfile]
-	jmp %%return
+	jmp @f
 %%error:
 	mov eax,0
+	jmp %%return
+
+@@
+	mov eax,[ss:_FUNC_OPENFILE_DISKTMP+treedesc.pfiledesc]
+	add eax,[ss:_FUNC_OPENFILE_START]
+	push dword 0
+	push eax
+	push ss
+	push word _FUNC_OPENFILE_DISKTMP
+	push dword 0x10010
+
+	mov cl,[ss:_FUNC_OPENFILE_DRIVE]
+	mov dx,ss
+	shl edx,16
+	mov dx,sp
+	call readdrive
+	mov sp,bp
+
+	cmp al,0
+	jnz %%error
+
+	cmp byte [ss:_FUNC_OPENFILE_DISKTMP+filedesc.type],FILE_TYPE_ERROR
+	jz %%error
+
+	mov si,bp
+	mov ecx,[ss:_FUNC_OPENFILE_DISKTMP+filedesc.size]
+	mov edx,[ss:_FUNC_OPENFILE_DISKTMP+filedesc.size+4]
+	mov [ss:si+2+2+2+2],ecx
+	mov [ss:si+2+2+2+2+4],edx
+
+	mov eax,[ss:_FUNC_OPENFILE_DISKTMP+filedesc.pfile]
+
 %%return:
+	pop si
+	pop di
 	pop bp
 	ret
 
-%undef _FUNC_OPENFILE_TREEDESC
+%undef _FUNC_OPENFILE_DISKTMP
 %undef _FUNC_OPENFILE_START
 %undef _FUNC_OPENFILE_CURRENT
 %undef _FUNC_OPENFILE_PATH

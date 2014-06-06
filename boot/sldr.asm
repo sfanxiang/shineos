@@ -253,9 +253,11 @@ pfs dd 0
 	shl edx,16
 	mov dx,bootcfgfile
 	movsx ax,byte [cs:init_dx]
+	sub sp,8-2
 	push ax
 	call openfile
-	add sp,2
+	pop ebx
+	pop ecx
 
 	cmp eax,0
 	jnz @f
