@@ -1,4 +1,4 @@
-;boot/includes/display.inc
+;boot/display.inc
 ;real mode
 
 %macro func_putchar 0

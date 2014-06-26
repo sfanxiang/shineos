@@ -1,7 +1,8 @@
-;boot/sldr.asm
+;boot/sldr1.asm
 ;sldr
 
 [bits 16]
+
 %include "display.inc"
 %include "fs.inc"
 %include "hd.inc"
@@ -11,64 +12,61 @@
 @@
 ;enable @f
 
-label_code0:
-	jmp short label_code0_start
+%define part0 446
+%define part1 462
+%define part2 478
+%define part3 494
+
+label_code2:
+	jmp short label_code2_start
 	nop
-	
-readdrivepack0:
+
+readdrivepack1:
 istruc dap
 	at dap.size,db 0x10
 	at dap.zero,db 0
-	at dap.sectors,dw 1
-	at dap.offset,dw label_code2
-	at dap.segment,dw 0x7c0
-	at dap.startsector,dq 1
+	at dap.sectors,dw 0x63
+	at dap.offset,dw label_code3
+	at dap.segment,dw 0x800
+	at dap.startsector,dq 2
 iend
-	
-reserved times 32-($-label_code0) db 0
-label_code0_start:
-	jmp 0x7c0:label_jump
-label_jump:
+custom_dx db 0
+custom_es db 0
+custom_di db 0
+init_dx db 0
+init_es db 0
+init_di db 0
+
+label_code2_start:
 	cli
 
-	mov ax,0x7c0
-	mov ss,ax
-	mov sp,0xe000
-
+	cmp byte [cs:custom_dx],0
+	jnz @f
 	mov [cs:init_dx],dx
+@@
+	cmp byte [cs:custom_es],0
+	jnz @f
 	mov [cs:init_es],es
+@@
+	cmp byte [cs:custom_di],0
+	jnz @f
 	mov [cs:init_di],di
-
-	call cls
-
-	mov dl,[cs:init_dx]
-	mov ah,0
-	int 0x13
-	jc label_diskerror
+@@
+	
+	mov sp,0x800
+	mov ss,sp
+	mov sp,0xe000
 
 	mov cl,[cs:init_dx]
 	mov dx,cs
 	shl edx,16
-	mov dx,readdrivepack0
+	mov dx,readdrivepack1
 	call readdrive
 	cmp al,0
 	jnz label_diskerror
 
-	jmp label_code2
+	jmp label_code3
 
-;used functions
-	func_cls
-
-times 218-($-label_code0) db 0
-
-zero dw 0
-orginal_drive db 0x80	;0x80 to 0xff
-;timestamp
-seconds db 0
-minutes db 0
-hours db 0
-
-label_code1:
 label_syshalt:
 	mov cx,cs
 	shl ecx,16
@@ -88,99 +86,10 @@ label_diskerror:
 msg_syshalt db 'SLDR: System halted.',0xd,0xa,0
 msg_diskerror db 'Something wrong with disk operation.',0xd,0xa,0
 
-init_dx dw 0
-init_es dw 0
-init_di dw 0
-
 ;used functions
 	func_printstring
 	func_readdrive
 
-times 216-($-label_code1) db 0
-sign dd 0
-copy_protect dw 0	;0x5a5a if protected
-
-;partition table
-part0:
-istruc part_entry
-	at part_entry.status,db 0x80	;0x00:inactive,0x80:active
-	at part_entry.first_head,db 0
-	at part_entry.first_sector,db 0
-	at part_entry.first_cylinder,db 0
-	at part_entry.type,db 0x60
-	at part_entry.last_head,db 0
-	at part_entry.last_sector,db 0
-	at part_entry.last_cylinder,db 0
-	at part_entry.first_lba,dd 0x100
-	at part_entry.sectors,dd 64
-iend
-part1:
-istruc part_entry
-	at part_entry.status,db 0
-	at part_entry.first_head,db 0
-	at part_entry.first_sector,db 0
-	at part_entry.first_cylinder,db 0
-	at part_entry.type,db 0
-	at part_entry.last_head,db 0
-	at part_entry.last_sector,db 0
-	at part_entry.last_cylinder,db 0
-	at part_entry.first_lba,dd 0
-	at part_entry.sectors,dd 0
-iend
-part2:
-istruc part_entry
-	at part_entry.status,db 0
-	at part_entry.first_head,db 0
-	at part_entry.first_sector,db 0
-	at part_entry.first_cylinder,db 0
-	at part_entry.type,db 0
-	at part_entry.last_head,db 0
-	at part_entry.last_sector,db 0
-	at part_entry.last_cylinder,db 0
-	at part_entry.first_lba,dd 0
-	at part_entry.sectors,dd 0
-iend
-part3:
-istruc part_entry
-	at part_entry.status,db 0
-	at part_entry.first_head,db 0
-	at part_entry.first_sector,db 0
-	at part_entry.first_cylinder,db 0
-	at part_entry.type,db 0
-	at part_entry.last_head,db 0
-	at part_entry.last_sector,db 0
-	at part_entry.last_cylinder,db 0
-	at part_entry.first_lba,dd 0
-	at part_entry.sectors,dd 0
-iend
-
-;boot signature
-dw 0xaa55
-
-;------------------------------------------------
-label_code2:
-	jmp short label_code2_start
-	nop
-
-readdrivepack1:
-istruc dap
-	at dap.size,db 0x10
-	at dap.zero,db 0
-	at dap.sectors,dw 0x63
-	at dap.offset,dw label_code3
-	at dap.segment,dw 0x7c0
-	at dap.startsector,dq 2
-iend
-label_code2_start:
-	mov cl,[cs:init_dx]
-	mov dx,cs
-	shl edx,16
-	mov dx,readdrivepack1
-	call readdrive
-	cmp al,0
-	jnz label_diskerror
-
-	jmp label_code3
 times 510-($-label_code2) db 0
 dw 0xaa55
 
@@ -205,10 +114,12 @@ label_code3_start:
 @@
 	mov si,part0+part_entry.status
 	mov cx,4
+	mov ax,0x7c0
+	mov ds,ax
 @@
-	test byte [cs:si+part_entry.status],0x80
+	test byte [si+part_entry.status],0x80
 	jz searchnext
-	cmp byte [cs:si+part_entry.type],0x60
+	cmp byte [si+part_entry.type],0x60
 	jz foundbootable
 searchnext:
 	add si,part1-part0
@@ -223,7 +134,7 @@ searchnext:
 msg_nobootable db 'No bootable partition with supported file system.',0xd,0xa,0
 
 foundbootable:
-	mov edx,[cs:si+part_entry.first_lba]
+	mov edx,[si+part_entry.first_lba]
 	mov [cs:pfs],edx
 	mov cx,cs
 	shl ecx,16
@@ -287,11 +198,11 @@ msg_openfileerror0 db 'Cannot open "',0
 msg_openfileerror1 db '".',0xd,0xa,0
 
 @@
-	mov [cs:next_block],eax
+	mov [cs:filebuffer+fileblock.pnext],eax
 
 @@
 	mov ecx,[cs:pfs]
-	mov edx,[cs:next_block]
+	mov edx,[cs:filebuffer+fileblock.pnext]
 	push cs
 	push word filebuffer
 	mov al,byte [cs:init_dx]
@@ -302,17 +213,16 @@ msg_openfileerror1 db '".',0xd,0xa,0
 	cmp al,0
 	jz readfileerror
 
-	mov eax,[cs:filebuffer+fileblock.pnext]
-	mov [cs:next_block],eax
-
 	mov cx,cs
 	shl ecx,16
 	mov cx,filebuffer+fileblock.data
 	mov dl,7
 	call printstring
-	jmp label_syshalt
+	
+	cmp dword [cs:filebuffer+fileblock.pnext],0
+	jnz @b
 
-next_block dw 0
+	jmp label_syshalt
 
 readfileerror:
 	mov cx,cs
@@ -331,3 +241,4 @@ msg_readfileerror db 'Failed reading file.',0xd,0xa,0
 ;big stuffs
 isdesc:
 filebuffer:
+
