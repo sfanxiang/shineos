@@ -1,4 +1,4 @@
-;boot/includes/std.inc
+;boot/std.inc
 ;shineos
 
 %ifndef _boot_includes_std_inc_included_

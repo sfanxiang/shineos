@@ -1,4 +1,4 @@
-;boot/includes/string.inc
+;boot/string.inc
 
 ;btoa, stoa, itoa are used for unsigned integer numbers
 %macro func_btoa 0

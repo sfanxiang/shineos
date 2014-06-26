@@ -1,4 +1,4 @@
-;boot/includes/fs.inc
+;boot/fs.inc
 ;shineos
 
 struc sdesc
