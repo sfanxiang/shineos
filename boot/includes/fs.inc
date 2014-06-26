@@ -28,7 +28,7 @@ struc filedesc
 	.size resb 8
 	.pfile resb 4
 endstruc
-%define FILE_BYTES_PER_BLOCK (512-4-4-8-4)
+%define FILE_BYTES_PER_BLOCK (512-4-4-4)
 struc fileblock
 	.pdesc resb 4
 	.pprev resb 4
@@ -36,16 +36,16 @@ struc fileblock
 	.pnext resb 4
 endstruc
 
-;section index starts from 1,
-;physical section of 1st index = 1st section number of partition + 64 + diskalloc + 1
+;block index starts from 1,
+;physical sector of 1st block = 1st sector number of partition + 64 + diskalloc + 1
 
 %macro func_initfs 0
 %ifndef _boot_includes_fs_inc_func_initfs_
 %define _boot_includes_fs_inc_func_initfs_
 ;_in_  ecx: point to a sdesc (extend to 1 sector(512 bytes))
-;_in_  edx: first section of the partition
+;_in_  edx: first sector of the partition
 ;_in_  stack 0-1: drive number
-;_out_ eax: point to a sdesc, sdesc.magic=='sf' if succeed 
+;_out_ eax: point to a sdesc, sdesc.magic=='sf' if succeed
 initfs:
 	push bp
 	push di
@@ -84,9 +84,9 @@ initfs:
 %endmacro
 
 %macro func_openfile 0
-%ifndef _boot_includes_fs_inc_func_readfile_
-%define _boot_includes_fs_inc_func_readfile_
-;_in_  ecx: physical section number of 1st section index (treedesc of /)
+%ifndef _boot_includes_fs_inc_func_openfile_
+%define _boot_includes_fs_inc_func_openfile_
+;_in_  ecx: physical sector number of 1st block index (treedesc of /)
 ;_in_  edx: point to the path
 ;_in_  stack 0-1: drive number
 ;_out_ eax: index of the file, or 0 if failed
@@ -243,5 +243,44 @@ openfile:
 	func_readdrive
 	func_strcmp
 	func_strlen
+%endif
+%endmacro
+
+%macro func_readfile 0
+%ifndef _boot_includes_fs_inc_func_readfile_
+%define _boot_includes_fs_inc_func_readfile_
+;reads 1 block of specified file
+;_in_  ecx: physical sector number of 1st block index (treedesc of /)
+;_in_  edx: index
+;_in_  stack 0-1: drive number
+;_in_  stack 2-5: point to the buffer
+;_out  al: 0 if failed
+;buffer size==512 bytes
+%define _FUNC_READFILE_DRIVE 0xf000
+%define _FUNC_READFILE_SECTOR (_FUNC_READFILE_DRIVE-4)
+readfile:
+	push bp
+	mov bp,sp
+	
+	push dword 0
+	add ecx,edx
+	dec ecx
+	push ecx
+	push dword [ss:bp+2+2+2]
+	push dword 0x10010
+	mov dx,ss
+	shl edx,16
+	mov dx,sp
+	mov cl,[ss:bp+2+2]
+	call readdrive
+
+	cmp al,0
+	sete al
+
+	mov sp,bp
+	pop bp
+	ret
+
+	func_readdrive
 %endif
 %endmacro

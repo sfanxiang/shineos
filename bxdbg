@@ -1,0 +1,4 @@
+#!/bin/sh
+# run bochs for shineos
+cd output/vm
+bochsdbg -f bochsrc -q

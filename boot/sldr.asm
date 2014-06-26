@@ -112,7 +112,7 @@ istruc part_entry
 	at part_entry.last_sector,db 0
 	at part_entry.last_cylinder,db 0
 	at part_entry.first_lba,dd 0x100
-	at part_entry.sectors,dd 1
+	at part_entry.sectors,dd 64
 iend
 part1:
 istruc part_entry
@@ -228,7 +228,8 @@ foundbootable:
 	mov cx,cs
 	shl ecx,16
 	mov cx,isdesc
-	movsx ax,byte [cs:init_dx]
+	mov al,byte [cs:init_dx]
+	xor ah,ah
 	push ax
 	call initfs
 	add sp,2
@@ -242,17 +243,20 @@ foundbootable:
 	mov dl,7
 	call printstring
 	jmp label_syshalt
-msg_fserror db 'Error occurred when trying to read file system.',0xd,0xa,0
+msg_fserror db 'Bad file system.',0xd,0xa,0
 pfs dd 0
 
 @@
 	mov ecx,[cs:pfs]
 	add ecx,[cs:isdesc+sdesc.diskalloc]
 	add ecx,65
+	mov [cs:pfs],ecx
+
 	mov dx,cs
 	shl edx,16
 	mov dx,bootcfgfile
-	movsx ax,byte [cs:init_dx]
+	mov al,byte [cs:init_dx]
+	xor ah,ah
 	sub sp,8-2
 	push ax
 	call openfile
@@ -265,19 +269,65 @@ pfs dd 0
 openfileerror:
 	mov cx,cs
 	shl ecx,16
-	mov cx,msg_openfileerror
+	mov cx,msg_openfileerror0
+	mov dl,7
+	call printstring
+	mov cx,cs
+	shl ecx,16
+	mov cx,bootcfgfile
+	mov dl,7
+	call printstring
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_openfileerror1
 	mov dl,7
 	call printstring
 	jmp label_syshalt
-msg_openfileerror db 'Failed opening file(s).',0xd,0xa,0
+msg_openfileerror0 db 'Cannot open "',0
+msg_openfileerror1 db '".',0xd,0xa,0
 
 @@
-	jmp $
+	mov [cs:next_block],eax
+
+@@
+	mov ecx,[cs:pfs]
+	mov edx,[cs:next_block]
+	push cs
+	push word filebuffer
+	mov al,byte [cs:init_dx]
+	xor ah,ah
+	push ax
+	call readfile
+
+	cmp al,0
+	jz readfileerror
+
+	mov eax,[cs:filebuffer+fileblock.pnext]
+	mov [cs:next_block],eax
+
+	mov cx,cs
+	shl ecx,16
+	mov cx,filebuffer+fileblock.data
+	mov dl,7
+	call printstring
+	jmp label_syshalt
+
+next_block dw 0
+
+readfileerror:
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_readfileerror
+	mov dl,7
+	call printstring
+	jmp label_syshalt
+msg_readfileerror db 'Failed reading file.',0xd,0xa,0
 
 ;used functions
 	func_initfs
 	func_openfile
+	func_readfile
 
 ;big stuffs
 isdesc:
-
+filebuffer:
