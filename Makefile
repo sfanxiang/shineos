@@ -19,7 +19,7 @@ $(TEMP)/sldr0 : boot/sldr0.asm boot/display.inc boot/hd.inc boot/std.inc
 	$(ASM) $< -Iboot/ -o $(TEMP)/sldr0.tmp -E
 	$(ASM) $(TEMP)/sldr0.tmp -o $@
 
-$(TEMP)/sldr1 : boot/sldr1.asm boot/display.inc boot/fs.inc boot/hd.inc boot/std.inc boot/string.inc
+$(TEMP)/sldr1 : boot/sldr1.asm boot/display.inc boot/file.inc boot/fs.inc boot/hd.inc boot/std.inc boot/string.inc
 	$(ASM) $< -Iboot/ -o $(TEMP)/sldr1.tmp -E
 	$(ASM) $(TEMP)/sldr1.tmp -o $@
 

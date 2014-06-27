@@ -286,4 +286,33 @@ strlen:
 	ret
 %endif
 %endmacro
+
+%macro func_strcpy 0
+%ifndef _boot_includes_string_inc_func_strcpy_
+%define _boot_includes_string_inc_func_strcpy_
+;_in_  ecx: point to source
+;_in_  edx: point to destination
+strcpy:
+	mov si,cx
+	shr ecx,16
+	mov ds,cx
+	mov di,dx
+	shr edx,16
+	mov es,dx
+	
+@@
+	cmp byte [si],0
+	jz @f
+	mov al,[si]
+	mov [es:di],al
+	inc si
+	inc di
+	jmp @b
+	
+@@
+	ret
+%endif
+%endmacro
+
 ;end of file
+

@@ -4,6 +4,7 @@
 [bits 16]
 
 %include "display.inc"
+%include "file.inc"
 %include "fs.inc"
 %include "hd.inc"
 %include "std.inc"
@@ -16,6 +17,14 @@
 %define part1 462
 %define part2 478
 %define part3 494
+
+;symbols for freespace
+%define isdesc freespace
+
+%define fileindex freespace
+%define fileoffset (fileindex+4)
+%define filebuffer (fileoffset+2)
+
 
 label_code2:
 	jmp short label_code2_start
@@ -98,7 +107,7 @@ label_code3:
 	jmp near label_code3_start
 	nop
 bootpart db 0xff	;0xff automatically detect bootable partition
-bootcfgfile db '/boot/boot.cfg'
+bootcfgfile db '/boot/sldr.cfg'
 times 512-($-bootcfgfile) db 0
 
 label_code3_start:
@@ -177,7 +186,7 @@ pfs dd 0
 	cmp eax,0
 	jnz @f
 
-openfileerror:
+opencfgfileerror:
 	mov cx,cs
 	shl ecx,16
 	mov cx,msg_openfileerror0
@@ -198,33 +207,39 @@ msg_openfileerror0 db 'Cannot open "',0
 msg_openfileerror1 db '".',0xd,0xa,0
 
 @@
-	mov [cs:filebuffer+fileblock.pnext],eax
-
+	mov [cs:fileindex],eax
+	mov ax,0
+	mov [cs:fileoffset],ax
+	
 @@
-	mov ecx,[cs:pfs]
-	mov edx,[cs:filebuffer+fileblock.pnext]
-	push cs
-	push word filebuffer
-	mov al,byte [cs:init_dx]
-	xor ah,ah
+	mov ecx,[cs:fileindex]
+	mov dx,[cs:fileoffset]
+	push dword [cs:pfs]
+	push dword filebuffer+1024
+	push dword filebuffer
+	mov ax,[cs:init_dx]
+	mov ah,0
 	push ax
-	call readfile
-
+	call filereadline
 	cmp al,0
 	jz readfileerror
-
+	
+	mov [cs:fileindex],ecx
+	mov [cs:fileoffset],dx
+	
+	cmp al,2
+	jz $
+	
 	mov cx,cs
 	shl ecx,16
-	mov cx,filebuffer+fileblock.data
+	mov cx,filebuffer+1024
 	mov dl,7
 	call printstring
+	jmp @b
 	
-	cmp dword [cs:filebuffer+fileblock.pnext],0
-	jnz @b
+	;temporary test
 
-	jmp label_syshalt
-
-readfileerror:
+readfileerror:	;todo: change to readfilecfgerror
 	mov cx,cs
 	shl ecx,16
 	mov cx,msg_readfileerror
@@ -237,8 +252,7 @@ msg_readfileerror db 'Failed reading file.',0xd,0xa,0
 	func_initfs
 	func_openfile
 	func_readfile
-
+	func_filereadline
 ;big stuffs
-isdesc:
-filebuffer:
+freespace:
 
