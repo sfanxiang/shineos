@@ -21,7 +21,8 @@
 ;symbols for freespace
 %define isdesc freespace
 
-%define fileindex freespace
+%define pfs (isdesc+512)
+%define fileindex (pfs+4)
 %define fileoffset (fileindex+4)
 %define filebuffer (fileoffset+2)
 
@@ -164,7 +165,6 @@ foundbootable:
 	call printstring
 	jmp label_syshalt
 msg_fserror db 'Bad file system.',0xd,0xa,0
-pfs dd 0
 
 @@
 	mov ecx,[cs:pfs]
@@ -215,12 +215,15 @@ msg_openfileerror1 db '".',0xd,0xa,0
 	mov ecx,[cs:fileindex]
 	mov dx,[cs:fileoffset]
 	push dword [cs:pfs]
-	push dword filebuffer+1024
-	push dword filebuffer
-	mov ax,[cs:init_dx]
+	push cs
+	push word filebuffer+1024
+	push cs
+	push word filebuffer
+	mov al,[cs:init_dx]
 	mov ah,0
 	push ax
 	call filereadline
+	add sp,14
 	cmp al,0
 	jz readfileerror
 	
@@ -228,15 +231,28 @@ msg_openfileerror1 db '".',0xd,0xa,0
 	mov [cs:fileoffset],dx
 	
 	cmp al,2
-	jz $
-	
+	jnz continuelines
 	mov cx,cs
 	shl ecx,16
 	mov cx,filebuffer+1024
 	mov dl,7
 	call printstring
+	jmp $
+	
+continuelines:
+	mov cx,cs
+	shl ecx,16
+	mov cx,filebuffer+1024
+	mov dl,7
+	call printstring
+	mov cx,cs
+	shl ecx,16
+	mov cx,crlf
+	mov dl,7
+	call printstring
 	jmp @b
 	
+crlf db 0xd,0xa,0
 	;temporary test
 
 readfileerror:	;todo: change to readfilecfgerror

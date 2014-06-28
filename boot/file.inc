@@ -19,6 +19,7 @@
 %define _FUNC_FILEREADLINE_DRIVE (_FUNC_FILEREADLINE_OFFSET-2)
 %define _FUNC_FILEREADLINE_DRIVEBUFFER (_FUNC_FILEREADLINE_DRIVE-4)
 %define _FUNC_FILEREADLINE_OUTBUFFER (_FUNC_FILEREADLINE_DRIVEBUFFER-4)
+%define _FUNC_FILEREADLINE_LFFLAG (_FUNC_FILEREADLINE_OUTBUFFER-1)
 
 filereadline:
 	push bp
@@ -34,6 +35,8 @@ filereadline:
 	mov [ss:_FUNC_FILEREADLINE_OUTBUFFER],eax
 	mov eax,[ss:bp+2+2+2+4+4]
 	mov [ss:_FUNC_FILEREADLINE_STARTSEC],eax
+	xor al,al
+	mov [ss:_FUNC_FILEREADLINE_LFFLAG],al
 	
 %%startread:
 	cmp word [ss:_FUNC_FILEREADLINE_OFFSET],0
@@ -47,9 +50,7 @@ filereadline:
 	call readfile
 	add sp,4
 	cmp al,0
-	jz %%skipread
-	mov al,0
-	jmp %%errret
+	jz %%errret
 
 %%skipread:
 	mov si,[ss:_FUNC_FILEREADLINE_DRIVEBUFFER+2]
@@ -61,24 +62,25 @@ filereadline:
 	mov al,2
 	mov bx,[si+fileblock.eof]
 	cmp [ss:_FUNC_FILEREADLINE_OFFSET],bx
-	ja %%return
+	jnb %%return
 
 @@
-	mov al,1
-	cmp byte [si+fileblock.data+_FUNC_FILEREADLINE_OFFSET],0xa
-	jz %%return
+	add si,fileblock.data
+	add si,[ss:_FUNC_FILEREADLINE_OFFSET]
+	mov al,[si]
+	cmp al,0xa
+	sete byte [ss:_FUNC_FILEREADLINE_LFFLAG]
 	
 	mov di,[ss:_FUNC_FILEREADLINE_OUTBUFFER+2]
 	mov es,di
 	mov di,[ss:_FUNC_FILEREADLINE_OUTBUFFER]
-	add si,[ss:_FUNC_FILEREADLINE_OFFSET]
-	mov al,[si+fileblock.data]
 	mov [es:di],al
+
 	inc word [ss:_FUNC_FILEREADLINE_OUTBUFFER]
 	
 	inc word [ss:_FUNC_FILEREADLINE_OFFSET]
 	cmp word [ss:_FUNC_FILEREADLINE_OFFSET],FILE_BYTES_PER_BLOCK
-	jna %%startread
+	jb %%prestartread
 	
 	mov si,[ss:_FUNC_FILEREADLINE_DRIVEBUFFER+2]
 	mov ds,si
@@ -91,7 +93,13 @@ filereadline:
 	mov [ss:_FUNC_FILEREADLINE_INDEX],eax
 	mov ax,0
 	mov [ss:_FUNC_FILEREADLINE_OFFSET],ax
-	jmp %%startread
+	
+%%prestartread:
+	cmp byte [ss:_FUNC_FILEREADLINE_LFFLAG],0
+	jz %%startread
+	
+	mov al,1
+	dec word [ss:_FUNC_FILEREADLINE_OUTBUFFER]
 	
 %%return:
 	mov si,[ss:_FUNC_FILEREADLINE_OUTBUFFER+2]

@@ -22,7 +22,7 @@ endstruc
 %define FILE_TYPE_ERROR 0
 %define FILE_TYPE_DIR 1
 %define FILE_TYPE_FILE 2
-struc filedesc
+struc filedesc		;may need to add time & date
 	.type resb 1
 	.mode resb 4
 	.size resb 8
