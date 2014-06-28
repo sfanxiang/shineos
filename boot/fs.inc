@@ -33,7 +33,7 @@ struc fileblock
 	.pdesc resb 4
 	.pprev resb 4
 	.pnext resb 4
-	.eof resb 2
+	.eof resb 2	;eof=1 means 1 byte
 	.data resb FILE_BYTES_PER_BLOCK
 endstruc
 
