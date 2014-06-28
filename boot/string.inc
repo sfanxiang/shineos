@@ -173,6 +173,61 @@ itoa:
 %endif
 %endmacro
 
+;todo: atob, atos, atoi
+%macro func_atob 0
+%ifndef _boot_includes_string_inc_func_atob_
+%define _boot_includes_string_inc_func_atob_
+;_in_  ecx: point to the string
+;_in_  dl: radix
+;_out_ al: number
+atob:
+	push bx
+	push si
+	mov si,cx
+	shr ecx,16
+	mov ds,cx
+	xor cx,cx
+	xor bl,bl
+	mov dh,1
+	
+@@
+	cmp byte [si],0
+	jz @f
+	inc si
+	inc cx
+	jmp @b
+
+@@
+	cmp cx,0
+	jz @f
+	dec cx
+	dec si
+	mov al,[si]
+	cmp al,'9'
+	jna %%number
+	cmp al,'Z'
+	jna %%cap
+	sub al,'a'-'A'
+%%cap:
+	sub al,'A'-'9'-1
+%%number:
+	sub al,'0'
+	
+	mul dh
+	add bl,al
+	mov al,dh
+	mul dl
+	mov dh,al
+	jmp @b
+	
+@@
+	mov al,bl
+	pop si
+	pop bx
+	ret
+%endif
+%endmacro
+
 %macro func_findchar 0
 %ifndef _boot_includes_string_inc_func_findchar_
 %define _boot_includes_string_inc_func_findchar_
@@ -293,6 +348,9 @@ strlen:
 ;_in_  ecx: point to source
 ;_in_  edx: point to destination
 strcpy:
+	push si
+	push di
+	
 	mov si,cx
 	shr ecx,16
 	mov ds,cx
@@ -310,6 +368,8 @@ strcpy:
 	jmp @b
 	
 @@
+	pop di
+	pop si
 	ret
 %endif
 %endmacro

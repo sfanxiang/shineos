@@ -24,6 +24,9 @@
 filereadline:
 	push bp
 	mov bp,sp
+	push bx
+	push si
+	push di
 	
 	mov [ss:_FUNC_FILEREADLINE_INDEX],ecx
 	mov [ss:_FUNC_FILEREADLINE_OFFSET],dx
@@ -102,15 +105,16 @@ filereadline:
 	dec word [ss:_FUNC_FILEREADLINE_OUTBUFFER]
 	
 %%return:
-	mov si,[ss:_FUNC_FILEREADLINE_OUTBUFFER+2]
-	mov ds,si
+	mov ds,[ss:_FUNC_FILEREADLINE_OUTBUFFER+2]
 	mov si,[ss:_FUNC_FILEREADLINE_OUTBUFFER]
 	mov byte [si],0
 	mov ecx,[ss:_FUNC_FILEREADLINE_INDEX]
 	mov edx,[ss:_FUNC_FILEREADLINE_OFFSET]
 	
 %%errret:
-	mov sp,bp
+	pop di
+	pop si
+	pop bx
 	pop bp
 	ret
 
