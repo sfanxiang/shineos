@@ -339,6 +339,7 @@ printprompt:
 	mov dl,7
 	call printstring
 	jmp $
+	;todo
 	
 msg_prompt db 'Choose one to boot: ',0
 
