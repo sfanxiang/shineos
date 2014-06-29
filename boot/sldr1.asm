@@ -18,14 +18,14 @@
 %define part2 478
 %define part3 494
 
-;symbols for freespace
+;symbols for free space
 %define isdesc freespace
 
 %define pfs (isdesc+512)
 %define fileindex (pfs+4)
 %define fileoffset (fileindex+4)
-%define filebuffer (fileoffset+2)
-
+%define drivebuffer (fileoffset+2)
+%define itembuffer (drivebuffer+512)
 
 label_code2:
 	jmp short label_code2_start
@@ -108,6 +108,8 @@ label_code3:
 	jmp near label_code3_start
 	nop
 bootpart db 0xff	;0xff automatically detect bootable partition
+bootdefault db 0
+boottimeout db 10
 bootcfgfile db '/boot/sldr.cfg'
 times 512-($-bootcfgfile) db 0
 
@@ -210,65 +212,136 @@ msg_openfileerror1 db '".',0xd,0xa,0
 	mov [cs:fileindex],eax
 	mov ax,0
 	mov [cs:fileoffset],ax
+
+	mov bl,1
+	mov bp,itembuffer
 	
-@@
+%macro cfgfilereadline 0
 	mov ecx,[cs:fileindex]
 	mov dx,[cs:fileoffset]
 	push dword [cs:pfs]
 	push cs
-	push word filebuffer+1024
+	push bp
 	push cs
-	push word filebuffer
+	push word drivebuffer
 	mov al,[cs:init_dx]
 	mov ah,0
 	push ax
 	call filereadline
 	add sp,14
 	cmp al,0
-	jz readfileerror
-	
+	jz readcfgfileerror
 	mov [cs:fileindex],ecx
 	mov [cs:fileoffset],dx
+	mov bl,al
+%endmacro
+
+@@
+	cmp bl,2
+	jz printprompt
 	
-	cmp al,2
-	jnz continuelines
-	mov cx,cs
-	shl ecx,16
-	mov cx,filebuffer+1024
-	mov dl,7
-	call printstring
-	jmp $
+	cfgfilereadline
 	
-continuelines:
+	cmp byte [cs:bp],0
+	jz @b
+	cmp byte [cs:bp],'#'
+	jz @b
+	
+	cmp byte [cs:bp],'$'
+	jnz additem
+	
+	;test symbol_default
 	mov cx,cs
 	shl ecx,16
-	mov cx,filebuffer+1024
-	mov dl,7
-	call printstring
+	mov cx,symbol_default
+	mov dx,cs
+	shl edx,16
+	mov dx,bp
+	inc dx
+	call strcmp
+	cmp al,0
+	jnz test_timeout
+	
+	cfgfilereadline
 	mov cx,cs
 	shl ecx,16
-	mov cx,crlf
-	mov dl,7
-	call printstring
+	mov cx,bp
+	mov dl,10
+	call atob
+	mov [cs:bootdefault],al
+	jmp @b
+	
+test_timeout:
+	mov cx,cs
+	shl ecx,16
+	mov cx,symbol_timeout
+	mov dx,cs
+	shl edx,16
+	mov dx,bp
+	inc dx
+	call strcmp
+	cmp al,0
+	jnz @b
+	
+	cfgfilereadline
+	mov cx,cs
+	shl ecx,16
+	mov cx,bp
+	mov dl,10
+	call atob
+	mov [cs:boottimeout],al
+	jmp @b
+	
+additem:
+	add bp,512
+	cfgfilereadline
+	add bp,512
 	jmp @b
 	
 crlf db 0xd,0xa,0
-	;temporary test
+symbol_default db 'default',0
+symbol_timeout db 'timeout',0
 
-readfileerror:	;todo: change to readfilecfgerror
+readcfgfileerror:
+	call cls
+
 	mov cx,cs
 	shl ecx,16
-	mov cx,msg_readfileerror
+	mov cx,msg_readfileerror0
+	mov dl,7
+	call printstring
+	mov cx,cs
+	shl ecx,16
+	mov cx,bootcfgfile
+	mov dl,7
+	call printstring
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_readfileerror1
 	mov dl,7
 	call printstring
 	jmp label_syshalt
-msg_readfileerror db 'Failed reading file.',0xd,0xa,0
+msg_readfileerror0 db 'Bad file "',0
+msg_readfileerror1 db '".',0xd,0xa,0
 
 ;used functions
+	func_atob
+	func_cls
 	func_initfs
 	func_openfile
 	func_readfile
 	func_filereadline
+	
+printprompt:
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_prompt
+	mov dl,7
+	call printstring
+	jmp $
+	
+msg_prompt db 'Choose one to boot: ',0
+
 ;big stuffs
 freespace:
 

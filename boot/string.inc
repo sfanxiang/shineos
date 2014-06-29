@@ -173,7 +173,6 @@ itoa:
 %endif
 %endmacro
 
-;todo: atob, atos, atoi
 %macro func_atob 0
 %ifndef _boot_includes_string_inc_func_atob_
 %define _boot_includes_string_inc_func_atob_
