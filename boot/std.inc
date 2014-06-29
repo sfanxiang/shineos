@@ -1,8 +1,8 @@
 ;boot/std.inc
 ;shineos
 
-%ifndef _boot_includes_std_inc_included_
-	%define _boot_includes_std_inc_included_
+%ifndef _boot_std_inc_included_
+	%define _boot_std_inc_included_
 ;@b, @f support
 	%idefine @b %$B
 	%idefine @f %$F

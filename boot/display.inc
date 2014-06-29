@@ -2,8 +2,8 @@
 ;real mode
 
 %macro func_putchar 0
-%ifndef _boot_includes_display_inc_func_putchar_
-%define _boot_includes_display_inc_func_putchar_
+%ifndef _boot_display_inc_func_putchar_
+%define _boot_display_inc_func_putchar_
 putchar:
 	pusha
 	mov al,cl
@@ -17,8 +17,8 @@ putchar:
 %endmacro
 
 %macro func_printstring 0
-%ifndef _boot_includes_display_inc_func_printstring_
-%define _boot_includes_display_inc_func_printstring_
+%ifndef _boot_display_inc_func_printstring_
+%define _boot_display_inc_func_printstring_
 printstring:
 	push bx
 	push ds
@@ -44,9 +44,39 @@ printstring:
 %endif
 %endmacro
 
+%macro func_writestring 0
+%ifndef _boot_display_inc_func_writestring_
+%define _boot_display_inc_func_writestring_
+writestring:
+	pusha
+	
+	push ecx
+	push dx
+	mov bh,0
+	mov ah,3
+	int 0x10
+	
+	mov bx,dx
+	pop dx
+	pop ecx
+	
+	call printstring
+	
+	mov dx,bx
+	mov bh,0
+	mov ah,2
+	int 0x10
+	
+	popa
+	ret
+	
+	func_printstring
+%endif
+%endmacro
+
 %macro func_scrollscreenup 0
-%ifndef _boot_includes_display_inc_func_scrollscreenup_
-%define _boot_includes_display_inc_func_scrollscreenup_
+%ifndef _boot_display_inc_func_scrollscreenup_
+%define _boot_display_inc_func_scrollscreenup_
 scrollscreenup:
 	pusha
 	mov al,cl
@@ -61,8 +91,8 @@ scrollscreenup:
 %endmacro
 
 %macro func_setcursor 0
-%ifndef _boot_includes_display_inc_func_setcursor_
-%define _boot_includes_display_inc_func_setcursor_
+%ifndef _boot_display_inc_func_setcursor_
+%define _boot_display_inc_func_setcursor_
 setcursor:
 	pusha
 	mov dx,cx
@@ -75,8 +105,8 @@ setcursor:
 %endmacro
 
 %macro func_initscreen 0
-%ifndef _boot_includes_display_inc_func_initscreen_
-%define _boot_includes_display_inc_func_initscreen_
+%ifndef _boot_display_inc_func_initscreen_
+%define _boot_display_inc_func_initscreen_
 initscreen:
 	pusha
 	mov ax,0x500
@@ -87,8 +117,8 @@ initscreen:
 %endmacro
 
 %macro func_cls 0
-%ifndef _boot_includes_display_inc_func_cls_
-%define _boot_includes_display_inc_func_cls_
+%ifndef _boot_display_inc_func_cls_
+%define _boot_display_inc_func_cls_
 cls:
 	call initscreen
 	mov cl,0

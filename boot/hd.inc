@@ -23,8 +23,8 @@ struc part_entry
 endstruc
 
 %macro func_readdrive 0
-%ifndef _boot_includes_hdd_inc_func_readdrive
-%define _boot_includes_hdd_inc_func_readdrive
+%ifndef _boot_hdd_inc_func_readdrive
+%define _boot_hdd_inc_func_readdrive
 ;_in_  cl: drive number
 ;_in_  edx: point to the dap
 ;_out_ al: 0 if succeed

@@ -42,8 +42,8 @@ endstruc
 ;block size = 512 bytes
 
 %macro func_initfs 0
-%ifndef _boot_includes_fs_inc_func_initfs_
-%define _boot_includes_fs_inc_func_initfs_
+%ifndef _boot_fs_inc_func_initfs_
+%define _boot_fs_inc_func_initfs_
 ;_in_  ecx: point to a sdesc (extend to 1 sector(512 bytes))
 ;_in_  edx: first sector of the partition
 ;_in_  stack 0-1: drive number
@@ -86,8 +86,8 @@ initfs:
 %endmacro
 
 %macro func_openfile 0
-%ifndef _boot_includes_fs_inc_func_openfile_
-%define _boot_includes_fs_inc_func_openfile_
+%ifndef _boot_fs_inc_func_openfile_
+%define _boot_fs_inc_func_openfile_
 ;_in_  ecx: physical sector number of 1st block index (treedesc of /)
 ;_in_  edx: point to the path
 ;_in_  stack 0-1: drive number
@@ -249,8 +249,8 @@ openfile:
 %endmacro
 
 %macro func_readfile 0
-%ifndef _boot_includes_fs_inc_func_readfile_
-%define _boot_includes_fs_inc_func_readfile_
+%ifndef _boot_fs_inc_func_readfile_
+%define _boot_fs_inc_func_readfile_
 ;reads 1 block of specified file
 ;_in_  ecx: block to read
 ;_in_  dl: drive number

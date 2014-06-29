@@ -19,13 +19,17 @@
 %define part3 494
 
 ;symbols for free space
-%define isdesc freespace
 
+%define isdesc freespace
 %define pfs (isdesc+512)
 %define fileindex (pfs+4)
 %define fileoffset (fileindex+4)
 %define drivebuffer (fileoffset+2)
-%define itembuffer (drivebuffer+512)
+%define itemcount (drivebuffer+512)
+%define itembuffer (itemcount+1)
+
+%define itemindex freespace
+%define strbuffer (itemindex+1)
 
 label_code2:
 	jmp short label_code2_start
@@ -212,6 +216,7 @@ msg_openfileerror1 db '".',0xd,0xa,0
 	mov [cs:fileindex],eax
 	mov ax,0
 	mov [cs:fileoffset],ax
+	mov [cs:itemcount],al
 
 	mov bl,1
 	mov bp,itembuffer
@@ -295,16 +300,15 @@ test_timeout:
 additem:
 	add bp,512
 	cfgfilereadline
+	inc byte [cs:itemcount]
 	add bp,512
 	jmp @b
 	
-crlf db 0xd,0xa,0
+msg_crlf db 0xd,0xa,0
 symbol_default db 'default',0
 symbol_timeout db 'timeout',0
 
 readcfgfileerror:
-	call cls
-
 	mov cx,cs
 	shl ecx,16
 	mov cx,msg_readfileerror0
@@ -326,23 +330,93 @@ msg_readfileerror1 db '".',0xd,0xa,0
 
 ;used functions
 	func_atob
+	func_btoa
 	func_cls
 	func_initfs
 	func_openfile
+	func_putchar
 	func_readfile
 	func_filereadline
 	
 printprompt:
 	mov cx,cs
 	shl ecx,16
-	mov cx,msg_prompt
+	mov cx,msg_crlf
 	mov dl,7
 	call printstring
+	
+	mov al,1
+	mov [cs:itemindex],al
+	mov bp,itembuffer
+	
+@@
+	mov al,[cs:itemindex]
+	cmp al,[cs:itemcount]
+	ja @f
+
+	mov cx,cs
+	shl ecx,16
+	mov cx,strbuffer
+	mov dl,[cs:itemindex]
+	push word 10
+	call btoa
+	add sp,2
+	
+	mov cx,cs
+	shl ecx,16
+	mov cx,strbuffer
+	mov dl,7
+	call printstring
+	
+	mov cl,' '
+	mov dl,7
+	call putchar
+	
+	mov cx,cs
+	shl ecx,16
+	mov cx,bp
+	mov dl,7
+	call printstring
+	
+	add bp,512*2
+	inc byte [cs:itemindex]
+	
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_crlf
+	mov dl,7
+	call printstring
+	
+	jmp @b
+
+@@
+	mov cx,cs
+	shl ecx,16
+	mov cx,msg_promptchoose
+	mov dl,7
+	call printstring
+	
+	mov cx,cs
+	shl ecx,16
+	mov cx,strbuffer
+	mov dl,[cs:bootdefault]
+	push word 10
+	call btoa
+	add sp,2
+	
+	mov cx,cs
+	shl ecx,16
+	mov cx,strbuffer
+	mov dl,7
+	call writestring
+	
 	jmp $
 	;todo
 	
-msg_prompt db 'Choose one to boot: ',0
+msg_promptchoose db 'Choose one to boot: ',0
 
-;big stuffs
+;used functions
+	func_writestring
+
 freespace:
 

@@ -2,8 +2,8 @@
 ;shineos
 
 %macro func_filereadline 0
-%ifndef _boot_includes_file_inc_func_filereadline_
-%define _boot_includes_file_inc_func_filereadline_
+%ifndef _boot_file_inc_func_filereadline_
+%define _boot_file_inc_func_filereadline_
 ;_in_  ecx: current index of the file
 ;_in_  dx: current offset of the file
 ;_in_  stack 0-1: drive number

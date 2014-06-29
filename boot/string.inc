@@ -2,8 +2,8 @@
 
 ;btoa, stoa, itoa are used for unsigned integer numbers
 %macro func_btoa 0
-%ifndef _boot_includes_string_inc_func_btoa_
-%define _boot_includes_string_inc_func_btoa_
+%ifndef _boot_string_inc_func_btoa_
+%define _boot_string_inc_func_btoa_
 ;_in_  ecx: point to the string
 ;_in_  dl: number
 ;_in_  stack 0-1: radix
@@ -57,8 +57,8 @@ btoa:
 %endmacro
 
 %macro func_stoa 0
-%ifndef _boot_includes_string_inc_func_stoa_
-%define _boot_includes_string_inc_func_stoa_
+%ifndef _boot_string_inc_func_stoa_
+%define _boot_string_inc_func_stoa_
 ;_in_  ecx: point to the string
 ;_in_  dx: number
 ;_in_  stack 0-1: radix
@@ -115,8 +115,8 @@ stoa:
 %endmacro
 
 %macro func_itoa 0
-%ifndef _boot_includes_string_inc_func_itoa_
-%define _boot_includes_string_inc_func_itoa_
+%ifndef _boot_string_inc_func_itoa_
+%define _boot_string_inc_func_itoa_
 ;_in_  ecx: point to the string
 ;_in_  edx: number
 ;_in_  stack 0-1: radix
@@ -174,8 +174,8 @@ itoa:
 %endmacro
 
 %macro func_atob 0
-%ifndef _boot_includes_string_inc_func_atob_
-%define _boot_includes_string_inc_func_atob_
+%ifndef _boot_string_inc_func_atob_
+%define _boot_string_inc_func_atob_
 ;_in_  ecx: point to the string
 ;_in_  dl: radix
 ;_out_ al: number
@@ -228,8 +228,8 @@ atob:
 %endmacro
 
 %macro func_findchar 0
-%ifndef _boot_includes_string_inc_func_findchar_
-%define _boot_includes_string_inc_func_findchar_
+%ifndef _boot_string_inc_func_findchar_
+%define _boot_string_inc_func_findchar_
 ;_in_  ecx: point to the string
 ;_in_  dl: char to find
 ;_out_ ax: index of the first char, or -1 if failed
@@ -261,8 +261,8 @@ findchar:
 %endmacro
 
 %macro func_strcmp 0
-%ifndef _boot_includes_string_inc_func_strcmp_
-%define _boot_includes_string_inc_func_strcmp_
+%ifndef _boot_string_inc_func_strcmp_
+%define _boot_string_inc_func_strcmp_
 ;_in_  ecx: point to 1st string
 ;_in_  edx: point to 2nd string
 ;_out_ al: <0 for s1<s2, ==0 for s1==s2, >0 for s1>s2
@@ -317,8 +317,8 @@ strcmp:
 %endmacro
 
 %macro func_strlen 0
-%ifndef _boot_includes_string_inc_func_strlen_
-%define _boot_includes_string_inc_func_strlen_
+%ifndef _boot_string_inc_func_strlen_
+%define _boot_string_inc_func_strlen_
 ;_in_  ecx: point to the string
 ;_out_ ax: length
 strlen:
@@ -342,8 +342,8 @@ strlen:
 %endmacro
 
 %macro func_strcpy 0
-%ifndef _boot_includes_string_inc_func_strcpy_
-%define _boot_includes_string_inc_func_strcpy_
+%ifndef _boot_string_inc_func_strcpy_
+%define _boot_string_inc_func_strcpy_
 ;_in_  ecx: point to source
 ;_in_  edx: point to destination
 strcpy:
