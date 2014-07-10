@@ -3,7 +3,7 @@
 
 [bits 16]
 %include "display.inc"
-%include "hd.inc"
+%include "drive.inc"
 %include "std.inc"
 
 @@
@@ -17,7 +17,7 @@ readdrivepack0:
 istruc dap
 	at dap.size,db 0x10
 	at dap.zero,db 0
-	at dap.sectors,dw 1
+	at dap.sectors,dw 64
 	at dap.offset,dw 0
 	at dap.segment,dw 0x800
 	at dap.startsector,dq 1

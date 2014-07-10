@@ -1,5 +1,8 @@
+all : makeall sldr.o
 
-all :
+makeall:
 	cd sldr0 && make
 	cd sldr1 && make
-	cat sldr0/sldr0.o sldr1/sldr1.o > sldr.o	
+	
+sldr.o : sldr0/sldr0.o sldr1/sldr1.o
+	cat sldr0/sldr0.o sldr1/sldr1.o > $@
