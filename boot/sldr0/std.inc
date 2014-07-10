@@ -16,7 +16,4 @@
 	%$B:
 	%endmacro
 
-;@comment, @endcomment support
-	%define @comment %if 0
-	%define @endcomment %endif
 %endif

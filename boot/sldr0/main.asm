@@ -56,6 +56,10 @@ label_jump:
 	mov di,[cs:init_es]
 	mov es,di
 	mov di,[cs:init_di]
+	mov ax,[cs:readdrivepack0+dap.segment]
+	mov ds,ax
+	mov es,ax
+	mov ss,ax
 
 	jmp 0x800:0
 
