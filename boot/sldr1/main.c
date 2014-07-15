@@ -43,12 +43,21 @@ void main()
 	");
 	
 	u4 partlba;
+	struct dap drivedata;
+	u1 sec[512];
 	
 	currentdrive=getfarbyte(0x7ff0);
 	_puts("\r\n");
 	
 	partlba=findactivepart();
 	if(!partlba)error("No active partition found.",1);
+	
+	drivedata.size=sizeof(drivedata);
+	drivedata.sectors=1;
+	drivedata.address=getpfar(sec);
+	drivedata.startsector=0;
+	drivedata.reserved=0; //drive number detected 0 here after bochs resets, is bochs buggy?
+	readdrivesectors(currentdrive,&drivedata);
 	
 	for(;;);
 	
