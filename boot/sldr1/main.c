@@ -58,7 +58,7 @@ void main()
 	drivedata.startsector=0;
 	drivedata.reserved=0;
 	readdrivesectors(currentdrive,&drivedata);
-	
+
 	for(;;);
 	
 	asm("\
