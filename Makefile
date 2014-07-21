@@ -6,9 +6,9 @@ OUTPUT = output
 #TEMP = temp
 VM = $(OUTPUT)/vm
 
-all : mkboot $(VM)/hd0
+all : make_boot $(VM)/hd0
 
-mkboot :
+make_boot :
 	cd boot && make
 
 $(VM)/hd0 : boot/sldr.o

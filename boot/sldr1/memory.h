@@ -49,5 +49,17 @@ u4 getfardword(pfar pt)
 		pop bp\
 	");
 }
+
+pfar getpfar(void* pt)
+{
+	asm("\
+		push bp\n\
+		mov bp,sp\n\
+		mov dx,cs\n\
+		sseg\n\
+		mov ax,4[bp]\n\
+		pop bp\
+	");
+}
 #endif
 

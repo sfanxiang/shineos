@@ -7,7 +7,7 @@ struct dap{
 	u2 sectors;
 	pfar address;
 	u4 startsector;
-	u4 reserved;
+	u4 reserved;	//should be 0
 };
 struct partentry{
 	u1 status;	//0x00:inactive,0x80:active
@@ -15,7 +15,7 @@ struct partentry{
 	u4 firstlba,sectors;
 };
 
-u1 readdrivesectors(u1 drive,struct dap arg)
+u1 readdrivesectors(u1 drive,struct dap *data)
 {
 	asm("\
 		push bp\n\

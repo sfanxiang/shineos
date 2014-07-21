@@ -1,4 +1,4 @@
-;boot/sldr.asm
+;boot/main.asm
 ;sldr
 
 [bits 16]

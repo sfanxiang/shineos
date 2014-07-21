@@ -1,4 +1,4 @@
-;boot/hd.inc
+;boot/drive.inc
 ;real mode
 
 struc dap
