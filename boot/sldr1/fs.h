@@ -1,23 +1,26 @@
 #ifndef _FS_H
 #define _FS_H
 
+#include "types.h"
+
+#define FS_START_RESERVED 64
 struct superdesc{
-	u2 magic;
-	u4 size;
-	u2 state;
-	u2 blocksize;	//bytes per block=blocksize*512
-	u4 pdiskalloc;
-	u4 wtimelow,wtimehigh;
+	u16 magic;
+	u32 size;
+	u16 state;
+	u16 blocksize;	//bytes per block=blocksize*512
+	u32 pdiskalloc;
+	u32 wtimelow,wtimehigh;
 	char name[];
 };
 
 struct treedesc{
-	u2 present;
-	u4 pfiledesc;
-	u4 pprev;
-	u4 pnext;
-	u4 pparent;
-	u4 pchild;
+	u16 present;
+	u32 pfiledesc;
+	u32 pprev;
+	u32 pnext;
+	u32 pparent;
+	u32 pchild;
 	char name[];
 };
 
@@ -26,20 +29,35 @@ struct treedesc{
 #define FILE_TYPE_FILE 2
 
 struct filedesc{
-	u2 type;
-	u4 mode;
-	u4 sizelow,sizehigh;
-	u4 pfile;
+	u16 type;
+	u32 mode;
+	u32 sizelow,sizehigh;
+	u32 pfile;
 };
 
 struct fileblock{
-	u4 pdesc;
-	u4 pprev;
-	u4 pnext;
-	u2 eof;
-	u1 data[];
+	u32 pdesc;
+	u32 pprev;
+	u32 pnext;
+	u16 eof;
+	u8 data[];
 };
 
-bool initfs()	//todo
+bool initfs(u8 drive,u32 start,struct superdesc *sdesc)
+{
+	struct dap drivedata;
+	
+	drivedata.size=sizeof(drivedata);
+	drivedata.sectors=1;
+	drivedata.address=getpfar(sdesc);
+	drivedata.startsector=start+FS_START_RESERVED;
+	drivedata.reserved=0;
+	
+	if(readdrivesectors(drive,&drivedata))
+		return false;
+	if(sdesc->magic!=(('s'<<8)+'f'))
+		return false;
+	return true;
+}
 
 #endif

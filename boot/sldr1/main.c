@@ -4,8 +4,9 @@ asm("jmp near _main");
 #include "display.h"
 #include "drive.h"
 #include "memory.h"
+#include "types.h"
 
-u1 currentdrive;
+u8 currentdrive;
 
 void error(char* msg,bool halt)
 {
@@ -19,12 +20,18 @@ void error(char* msg,bool halt)
 	}
 }
 
-u4 findactivepart()
+void loadactivepart()
 {
 	pfar ppartentry;
 	for(ppartentry=0x7dbe;ppartentry<=0x7dee;ppartentry+=0x10)
 		if(getfarbyte(ppartentry)==0x80)break;
-	if(ppartentry>0x7dee)return 0;else return getfardword(ppartentry+8);
+	if(ppartentry>0x7dee)error("No active partition found.");
+	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.");
+	loadpartfs(getfardword(ppartentry+8);
+}
+
+void loadpartfs(u32 fsstart)
+{
 }
 
 void main()
@@ -41,24 +48,12 @@ void main()
 		mov [4],di\n\
 		pop ds\
 	");
-	
-	u4 partlba;
-	struct dap drivedata;
-	u1 mbrdata[512];
-	
+
 	currentdrive=getfarbyte((pfar)0x7ff0);
 	_puts("\r\n");
 	
-	partlba=findactivepart();
-	if(!partlba)error("No active partition found.",1);
-
-	drivedata.size=sizeof(drivedata);
-	drivedata.sectors=1;
-	drivedata.address=getpfar(mbrdata);
-	drivedata.startsector=0;
-	drivedata.reserved=0;
-	readdrivesectors(currentdrive,&drivedata);
-
+	loadactivepart();
+	
 	for(;;);
 	
 	asm("\

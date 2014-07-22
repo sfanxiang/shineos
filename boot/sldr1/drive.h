@@ -1,21 +1,22 @@
 #ifndef _DRIVE_H
 #define _DRIVE_H
 
-#include "memory.h"
+#include "types.h"
+
 struct dap{
-	u2 size;
-	u2 sectors;
+	u16 size;
+	u16 sectors;
 	pfar address;
-	u4 startsector;
-	u4 reserved;	//should be 0
+	u32 startsector;
+	u32 reserved;	//should be 0
 };
 struct partentry{
-	u1 status;	//0x00:inactive,0x80:active
-	u1 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
-	u4 firstlba,sectors;
+	u8 status;	//0x00:inactive,0x80:active
+	u8 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
+	u32 firstlba,sectors;
 };
 
-u1 readdrivesectors(u1 drive,struct dap *data)
+u8 readdrivesectors(u8 drive,struct dap *data)
 {
 	asm("\
 		push bp\n\
