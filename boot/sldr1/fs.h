@@ -1,6 +1,7 @@
 #ifndef _FS_H
 #define _FS_H
 
+#include "memory.h"
 #include "types.h"
 
 #define FS_START_RESERVED 64

@@ -8,7 +8,7 @@ asm("jmp near _main");
 
 u8 currentdrive;
 
-void error(char* msg,bool halt)
+void error(char* msg,u8 halt)
 {
 	_puts("SLDR: Error:\r\n");
 	_puts(msg);
@@ -20,18 +20,18 @@ void error(char* msg,bool halt)
 	}
 }
 
+void loadpartfs(u32 fsstart)
+{
+}
+
 void loadactivepart()
 {
 	pfar ppartentry;
 	for(ppartentry=0x7dbe;ppartentry<=0x7dee;ppartentry+=0x10)
 		if(getfarbyte(ppartentry)==0x80)break;
-	if(ppartentry>0x7dee)error("No active partition found.");
-	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.");
-	loadpartfs(getfardword(ppartentry+8);
-}
-
-void loadpartfs(u32 fsstart)
-{
+	if(ppartentry>0x7dee)error("No active partition found.",1);
+	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.",1);
+	loadpartfs(getfardword(ppartentry+8));
 }
 
 void main()

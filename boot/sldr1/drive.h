@@ -1,6 +1,7 @@
 #ifndef _DRIVE_H
 #define _DRIVE_H
 
+#include "memory.h"
 #include "types.h"
 
 struct dap{
