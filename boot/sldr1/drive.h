@@ -23,7 +23,6 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 		push bp\n\
 		mov bp,sp\n\
 		push ds\n\
-		pusha\n\
 		mov si,cs\n\
 		mov ds,si\n\
 		sseg\n\
@@ -32,9 +31,8 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 		mov dl,4[bp]\n\
 		mov ah,#0x42\n\
 		int #0x13\n\
-		popa\n\
 		jc readdrivesectors_error\n\
-		mov al,0\n\
+		mov al,#0\n\
 		jmp readdrivesectors_return\n\
 	readdrivesectors_error:\n\
 		mov al,ah\n\

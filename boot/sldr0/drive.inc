@@ -30,7 +30,8 @@ endstruc
 ;_out_ al: 0 if succeed
 readdrive:
 	push ds
-	pusha
+	push si
+	
 	mov si,dx
 	shr edx,16
 	mov ds,dx
@@ -39,14 +40,12 @@ readdrive:
 	int 0x13
 	jc %%error
 
-	popa
 	mov al,0
 	jmp %%return
 %%error:
-	popa
 	mov al,0xff
-	jmp %%return
 %%return:
+	pop si
 	pop ds
 	ret
 %endif

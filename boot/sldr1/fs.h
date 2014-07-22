@@ -9,7 +9,7 @@ struct superdesc{
 	u16 magic;
 	u32 size;
 	u16 state;
-	u16 blocksize;	//bytes per block=blocksize*512
+	u16 blocksize;	//bytes per block = blocksize*512
 	u32 pdiskalloc;
 	u32 wtimelow,wtimehigh;
 	char name[];
@@ -44,7 +44,7 @@ struct fileblock{
 	u8 data[];
 };
 
-bool initfs(u8 drive,u32 start,struct superdesc *sdesc)
+u8 initfs(u8 drive,u32 start,struct superdesc *sdesc)
 {
 	struct dap drivedata;
 	
@@ -55,10 +55,10 @@ bool initfs(u8 drive,u32 start,struct superdesc *sdesc)
 	drivedata.reserved=0;
 	
 	if(readdrivesectors(drive,&drivedata))
-		return false;
-	if(sdesc->magic!=(('s'<<8)+'f'))
-		return false;
-	return true;
+		return 0;
+	if(sdesc->magic!=('s'+('f'<<8)))
+		return 0;
+	return 1;
 }
 
 #endif

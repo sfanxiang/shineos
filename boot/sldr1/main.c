@@ -3,6 +3,7 @@ asm("jmp near _main");
 #include <string.h>
 #include "display.h"
 #include "drive.h"
+#include "fs.h"
 #include "memory.h"
 #include "types.h"
 
@@ -22,6 +23,12 @@ void error(char* msg,u8 halt)
 
 void loadpartfs(u32 fsstart)
 {
+	u8 sdescdata[512];
+	char size[10];
+	if(!initfs(currentdrive,fsstart,(struct superdesc*)sdescdata))
+		error("Failed initializing file system.",1);
+	//itoa(((struct superdesc*)sdescdata)->size,size,10);
+	//_puts(size);
 }
 
 void loadactivepart()
