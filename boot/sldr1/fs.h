@@ -33,6 +33,8 @@ struct filedesc{
 	u16 type;
 	u32 mode;
 	u32 sizelow,sizehigh;
+	u32 ctimelow,ctimehigh;
+	u32 wtimelow,wtimehigh;
 	u32 pfile;
 };
 
@@ -44,14 +46,14 @@ struct fileblock{
 	u8 data[];
 };
 
-u8 initfs(u8 drive,u32 start,struct superdesc *sdesc)
+u8 initfs(u8 drive,u32 part,struct superdesc *sdesc)
 {
 	struct dap drivedata;
 	
 	drivedata.size=sizeof(drivedata);
 	drivedata.sectors=1;
 	drivedata.address=getpfar(sdesc);
-	drivedata.startsector=start+FS_START_RESERVED;
+	drivedata.startsector=part+FS_START_RESERVED;
 	drivedata.reserved=0;
 	
 	if(readdrivesectors(drive,&drivedata))
@@ -59,6 +61,11 @@ u8 initfs(u8 drive,u32 start,struct superdesc *sdesc)
 	if(sdesc->magic!=('s'+('f'<<8)))
 		return 0;
 	return 1;
+}
+
+u8 openfile(u8 drive,u32 part,char *path,struct superdesc *sdesc,u32 *block,void *size/*u64*/)
+{
+	
 }
 
 #endif
