@@ -1,3 +1,3 @@
 ASM = nasm
-sldr0.o : main.asm display.inc drive.inc std.inc
+sldr0.bin : main.asm display.inc drive.inc std.inc
 	$(ASM) -o $@ $<

@@ -2,23 +2,16 @@
 #OBJCOPY = objcopy -S -j .text -O binary
 
 OUTPUT = output
-#TEMP = temp
 VM = $(OUTPUT)/vm
 
-all : make_boot $(VM)/hd0
+all:_boot/sldr.bin $(VM)/hd0
 
-make_boot :
+_boot/sldr.bin:
 	cd boot && make
 
-$(VM)/hd0 : boot/sldr.o
+$(VM)/hd0:boot/sldr.bin
 	dd if=$< of=$@ conv=notrunc
 	
-tool :
+tool:
 	cd tools && make
-
-#init :
-#	mkdir $(TEMP)
-#
-#clean :
-#	rm -r $(TEMP)/*
 
