@@ -15,7 +15,7 @@ struct partentry{
 	u4 firstlba,sectors;
 };
 
-u1 readdrivesectors(u1 drive,struct dap *arg)
+u1 readdrivesectors(u1 drive,struct dap arg)
 {
 	asm("\
 		push bp\n\
