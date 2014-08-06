@@ -1,4 +1,4 @@
-;boot/sldr.asm
+;boot/main.asm
 ;sldr
 
 [bits 16]
@@ -70,6 +70,7 @@ times 218-($-label_code0) db 0
 
 zero dw 0
 orginal_drive db 0x80	;0x80 to 0xff
+
 ;timestamp
 seconds db 0
 minutes db 0

@@ -5,13 +5,13 @@
 %ifndef _boot_display_inc_func_putchar_
 %define _boot_display_inc_func_putchar_
 putchar:
-	pusha
+	push bx
 	mov al,cl
 	mov bl,dl
 	mov bh,0
 	mov ah,0xe
 	int 10h
-	popa
+	pop bx
 	ret
 %endif
 %endmacro
@@ -48,10 +48,11 @@ printstring:
 %ifndef _boot_display_inc_func_writestring_
 %define _boot_display_inc_func_writestring_
 writestring:
-	pusha
-	
+	push bx
+
 	push ecx
 	push dx
+	
 	mov bh,0
 	mov ah,3
 	int 0x10
@@ -67,7 +68,7 @@ writestring:
 	mov ah,2
 	int 0x10
 	
-	popa
+	pop bx
 	ret
 	
 	func_printstring
@@ -78,14 +79,14 @@ writestring:
 %ifndef _boot_display_inc_func_scrollscreenup_
 %define _boot_display_inc_func_scrollscreenup_
 scrollscreenup:
-	pusha
+	push bx
 	mov al,cl
 	mov bh,dl
 	mov cx,0
 	mov dx,0x1950
 	mov ah,6
 	int 0x10
-	popa
+	pop bx
 	ret
 %endif
 %endmacro
@@ -94,12 +95,12 @@ scrollscreenup:
 %ifndef _boot_display_inc_func_setcursor_
 %define _boot_display_inc_func_setcursor_
 setcursor:
-	pusha
+	push bx
 	mov dx,cx
 	mov bh,0
 	mov ah,2
 	int 0x10
-	popa
+	pop bx
 	ret
 %endif
 %endmacro
@@ -108,10 +109,8 @@ setcursor:
 %ifndef _boot_display_inc_func_initscreen_
 %define _boot_display_inc_func_initscreen_
 initscreen:
-	pusha
 	mov ax,0x500
 	int 0x10
-	popa
 	ret
 %endif
 %endmacro

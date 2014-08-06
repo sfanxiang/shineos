@@ -1,14 +1,11 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-typedef unsigned char u1;
-typedef unsigned short u2;
-typedef unsigned long u4;
+#include "types.h"
 
-typedef u1 bool;
-typedef u4 pfar;
+typedef u32 pfar;
 
-u1 getfarbyte(pfar pt)
+u8 getfarbyte(pfar pt)
 {
 	asm("\
 		push bp\n\
@@ -28,7 +25,7 @@ u1 getfarbyte(pfar pt)
 	");
 }
 
-u4 getfardword(pfar pt)
+u32 getfardword(pfar pt)
 {
 	asm("\
 		push bp\n\
@@ -46,6 +43,18 @@ u4 getfardword(pfar pt)
 		mov dx,2[si]\n\
 		pop si\n\
 		pop ds\n\
+		pop bp\
+	");
+}
+
+pfar getpfar(void* pt)
+{
+	asm("\
+		push bp\n\
+		mov bp,sp\n\
+		mov dx,cs\n\
+		sseg\n\
+		mov ax,4[bp]\n\
 		pop bp\
 	");
 }

@@ -1,8 +1,9 @@
-all : makeall sldr.o
+all:_subdir sldr.bin
 
-makeall:
+sldr.bin : sldr0/sldr0.bin sldr1/sldr1.bin
+	cat sldr0/sldr0.bin sldr1/sldr1.bin > $@
+
+_subdir:
 	cd sldr0 && make
 	cd sldr1 && make
-	
-sldr.o : sldr0/sldr0.o sldr1/sldr1.o
-	cat sldr0/sldr0.o sldr1/sldr1.o > $@
+

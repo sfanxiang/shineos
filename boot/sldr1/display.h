@@ -5,13 +5,13 @@ void _putchar(char chr)
 	asm("\
 		push bp\n\
 		mov bp,sp\n\
-		pusha\n\
+		push bx\n\
 		sseg\n\
 		mov al,4[bp]\n\
 		mov bx,#7\n\
 		mov ah,#0xe\n\
 		int #0x10\n\
-		popa\n\
+		pop bx\n\
 		pop bp\
 	");
 }
