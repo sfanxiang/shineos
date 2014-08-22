@@ -1,12 +1,9 @@
-ASM = nasm -f obj
-CC16 = wcc -d0 -s
-LD = wlink format raw bin libpath $(WATCOM)/lib286/dos/ libpath $(WATCOM)/lib286/
+CC16 = bcc -ansi -c
+LD16_1 = ld86
+LD16_2 = -d -L/usr/lib/bcc/ -lc
 
-sldr1.bin : cstart.o main.o
-	$(LD) file cstart.o file main.o name sldr1.bin
-
-cstart.o : cstart.asm
-	$(ASM) -o $@ $<
+sldr1.bin : main.o
+	$(LD16_1)  -o $@ main.o $(LD16_2)
 
 main.o : main.c display.h drive.h fs.h memory.h types.h
-	$(CC16) $<
+	 $(CC16) -O -o $@ $<
