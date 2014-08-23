@@ -22,11 +22,9 @@ void error(char* msg,u8 halt)
 	}
 }
 
-void loadactivepartfs(u32 fsstart)
+void openbootcfg(u32 part)
 {
-	u8 sdescdata[512];
-	if(!initfs(currentdrive,fsstart,(struct superdesc*)sdescdata))
-		error("Failed initializing file system.",1);
+	
 }
 
 void loadactivepart()
@@ -36,7 +34,7 @@ void loadactivepart()
 		if(getfarbyte(ppartentry)==0x80)break;
 	if(ppartentry>0x7dee)error("No active partition found.",1);
 	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.",1);
-	loadactivepartfs(getfardword(ppartentry+8));
+	openbootcfg(getfardword(ppartentry+8));
 }
 
 void main()
