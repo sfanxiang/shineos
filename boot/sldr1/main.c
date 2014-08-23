@@ -22,7 +22,7 @@ void error(char* msg,u8 halt)
 	}
 }
 
-void loadpartfs(u32 fsstart)
+void loadactivepartfs(u32 fsstart)
 {
 	u8 sdescdata[512];
 	if(!initfs(currentdrive,fsstart,(struct superdesc*)sdescdata))
@@ -36,7 +36,7 @@ void loadactivepart()
 		if(getfarbyte(ppartentry)==0x80)break;
 	if(ppartentry>0x7dee)error("No active partition found.",1);
 	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.",1);
-	loadpartfs(getfardword(ppartentry+8));
+	loadactivepartfs(getfardword(ppartentry+8));
 }
 
 void main()
