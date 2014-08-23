@@ -7,7 +7,7 @@
 #define FS_START_RESERVED 64
 struct superdesc{
 	u16 magic;
-	u32 size;
+	u32 blockcount;
 	u16 state;
 	u16 blocksize;	//bytes per block = blocksize*512
 	u32 pdiskalloc;
@@ -46,17 +46,24 @@ struct fileblock{
 	u8 data[];
 };
 
-u8 initfs(u8 drive,u32 part,struct superdesc *sdesc)
+u8 readblock(u8 drive,u32 part,u32 block,u16 blocksize,void *dest)
 {
 	struct dap drivedata;
 	
 	drivedata.size=sizeof(drivedata);
-	drivedata.sectors=1;
-	drivedata.address=getpfar(sdesc);
-	drivedata.startsector=part+FS_START_RESERVED;
+	drivedata.sectors=blocksize;
+	drivedata.address=getpfar(dest);
+	drivedata.startsector=part+FS_START_RESERVED+block*blocksize;
 	drivedata.reserved=0;
 	
 	if(readdrivesectors(drive,&drivedata))
+		return 0;
+	return 1;
+}
+
+u8 initfs(u8 drive,u32 part,struct superdesc *sdesc)
+{
+	if(!readblock(drive,part,(u32)0,1,sdesc))
 		return 0;
 	if(sdesc->magic!=('s'+('f'<<8)))
 		return 0;
