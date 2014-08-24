@@ -17,7 +17,6 @@ struct superdesc{
 };
 
 struct treedesc{
-	u16 present;
 	u32 pfiledesc;
 	u32 pprev;
 	u32 pnext;
@@ -26,12 +25,7 @@ struct treedesc{
 	char name[];
 };
 
-#define FILE_TYPE_ERROR 0
-#define FILE_TYPE_DIR 1
-#define FILE_TYPE_FILE 2
-
 struct filedesc{
-	u16 type;
 	u32 mode;
 	u32 sizelow,sizehigh;
 	u32 ctimelow,ctimehigh;
@@ -66,36 +60,63 @@ u8 searchindir(u8 drive,u32 part,u32 dir,u16 blocksize,char *filename,u32 *pfile
 {
 	u8 data[8192];
 	if(!readblock(drive,part,dir,blocksize,data))return 0;
-	dir=((treedesc*)data)->pchild;
-	do{
+	dir=((struct treedesc*)data)->pchild;
+	while(dir)
+	{
 		if(!readblock(drive,part,dir,blocksize,data))return 0;
-		if(!strcmp(((treedesc*)data)->name,filename))break;
-		dir=((treedesc*)data)->pnext;
-	}while(dir);
+		if(!strcmp(((struct treedesc*)data)->name,filename))break;
+		dir=((struct treedesc*)data)->pnext;
+	}
 	if(dir)
 	{
-		*pfiledesc=
+		if(pfiledesc)*pfiledesc=((struct treedesc*)data)->pfiledesc;
+		if(pchild)*pchild=((struct treedesc*)data)->pchild;
+		return 1;
 	}
+	return 0;
 }
 
-u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,void *size/*u64*/)
+u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,u32 *size)
 {
-	u8 data[8192];u16 blocksize;char *head=path;
+	u8 data[8192];
+	u32 cur;
+	char *head=path;
 	if(!readblock(drive,part,(u32)0,1,data))
 		return 0;
-	if(sdesc->magic!=('s'+('f'<<8)))
+	if(((struct superdesc*)data)->magic!=('s'+('f'<<8)))
 		return 0;
-	blocksize=((superdesc*)data)->blocksize;
+	*blocksize=((struct superdesc*)data)->blocksize;
+	cur=((struct superdesc*)data)->proot;
+	while(*path)
 	{
 		if(*head=='/'){head++;path++;}
 		else if(*path!='/')path++;
 		else
 		{
-			head=path;*path=0;
-			
-			*path='/';
+			*path=0;
+			if(!searchindir(drive,part,
+				cur,*blocksize,
+				head,0,&cur)){
+				*path='/';
+				return 0;
+			}
+			*path='/';head=path;
 		}
 	}
+	if(head!=path)
+	{
+		if(!searchindir(drive,part,
+			cur,*blocksize,
+			head,&cur,0))
+			return 0;
+		if(!readblock(drive,part,cur,
+			*blocksize,data))
+			return 0;
+		if(pfile)*pfile=((struct filedesc*)data)->pfile;
+		if(size)*size=((struct filedesc*)data)->sizelow;
+		return 1;
+	}
+	return 0;
 }
 
 #endif

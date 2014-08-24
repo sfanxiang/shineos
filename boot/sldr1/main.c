@@ -24,7 +24,11 @@ void error(char* msg,u8 halt)
 
 void openbootcfg(u32 part)
 {
-	
+	u16 blocksize;u32 pfile;
+	if(!openfile(currentdrive,part,
+		"/boot/sldr.cfg",&pfile,
+		&blocksize,0))
+		error("Cannot open boot config file.",1);
 }
 
 void loadactivepart()
