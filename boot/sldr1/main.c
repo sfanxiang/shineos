@@ -28,7 +28,7 @@ void openbootcfg(u32 part)
 	if(!openfile(currentdrive,part,
 		"/boot/sldr.cfg",&pfile,
 		&blocksize,0))
-		error("Cannot open boot config file.",1);
+		error("Cannot open \"/boot/sldr.cfg\".",1);
 }
 
 void loadactivepart()

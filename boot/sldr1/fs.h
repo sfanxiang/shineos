@@ -56,7 +56,7 @@ u8 readblock(u8 drive,u32 part,u32 block,u16 blocksize,void *dest)
 	return 1;
 }
 
-u8 searchindir(u8 drive,u32 part,u32 dir,u16 blocksize,char *filename,u32 *pfiledesc,u32 *pchild)
+u8 searchindir(u8 drive,u32 part,u32 dir,u16 blocksize,char *filename,u32 *pfiledesc,u32 *pdesc)
 {
 	u8 data[8192];
 	if(!readblock(drive,part,dir,blocksize,data))return 0;
@@ -70,7 +70,7 @@ u8 searchindir(u8 drive,u32 part,u32 dir,u16 blocksize,char *filename,u32 *pfile
 	if(dir)
 	{
 		if(pfiledesc)*pfiledesc=((struct treedesc*)data)->pfiledesc;
-		if(pchild)*pchild=((struct treedesc*)data)->pchild;
+		if(pdesc)*pdesc=dir;
 		return 1;
 	}
 	return 0;
