@@ -1,8 +1,11 @@
 #ifndef _FS_H
 #define _FS_H
 
+#include "drive.h"
 #include "memory.h"
 #include "types.h"
+
+#include <string.h>
 
 #define FS_START_RESERVED 64
 struct superdesc{
