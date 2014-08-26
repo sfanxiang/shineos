@@ -2,7 +2,6 @@
 #define _DRIVE_H
 
 #include "memory.h"
-#include "types.h"
 
 struct dap{
 	u16 size;

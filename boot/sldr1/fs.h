@@ -3,7 +3,6 @@
 
 #include "drive.h"
 #include "memory.h"
-#include "types.h"
 
 #include <string.h>
 
@@ -40,7 +39,7 @@ struct fileblock{
 	u32 pfiledesc;
 	u32 pprev;
 	u32 pnext;
-	u16 eof;
+	u16 datasize;
 	u8 data[];
 };
 
@@ -99,7 +98,7 @@ u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,u32 *size)
 			*path=0;
 			if(!searchindir(drive,part,
 				cur,*blocksize,
-				head,0,&cur)){
+				head,NULL,&cur)){
 				*path='/';
 				return 0;
 			}
@@ -110,7 +109,7 @@ u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,u32 *size)
 	{
 		if(!searchindir(drive,part,
 			cur,*blocksize,
-			head,&cur,0))
+			head,&cur,NULL))
 			return 0;
 		if(!readblock(drive,part,cur,
 			*blocksize,data))
@@ -120,6 +119,25 @@ u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,u32 *size)
 		return 1;
 	}
 	return 0;
+}
+
+u8 readfile(u8 drive,u32 part,u32 pfile,u32 blocks,
+	u32 blocksize,u8 *data,u32 *pnext,u32 *blocksread)
+{
+	u32 i;u8 buf[8192];
+	for(i=0,((!blocksread)||(*blocksread=0));i<blocks&&pfile;i++,((!blocksread)||(*blocksread=i)))
+	{
+		if(!readblock(drive,part,pfile,blocksize,buf))
+			return 0;
+		if(data){
+			memcpy(data,&(((struct fileblock*)buf)->data),
+				((struct fileblock*)buf)->datasize);
+			data+=((struct fileblock*)buf)->datasize;
+		}
+		pfile=((struct fileblock*)buf)->pnext;
+	}
+	if(pnext)*pnext=pfile;
+	return 1;
 }
 
 #endif

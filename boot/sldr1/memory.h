@@ -1,7 +1,7 @@
 #ifndef _MEMORY_H
 #define _MEMORY_H
 
-#include "types.h"
+#include "defines.h"
 
 typedef u32 pfar;
 

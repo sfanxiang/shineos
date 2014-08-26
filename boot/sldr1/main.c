@@ -6,7 +6,6 @@ asm("\
 #include "drive.h"
 #include "fs.h"
 #include "memory.h"
-#include "types.h"
 
 u8 currentdrive;
 
@@ -27,7 +26,7 @@ void openbootcfg(u32 part)
 	u16 blocksize;u32 pfile;
 	if(!openfile(currentdrive,part,
 		"/boot/sldr.cfg",&pfile,
-		&blocksize,0))
+		&blocksize,NULL))
 		error("Cannot open \"/boot/sldr.cfg\".",1);
 }
 
