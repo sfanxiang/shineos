@@ -37,7 +37,8 @@ label_jump:
 	mov [cs:init_es],es
 	mov [cs:init_di],di
 
-	call cls
+	mov cl,3
+	call setvideomode
 
 	mov dl,[cs:init_dx]
 	mov ah,0
@@ -64,7 +65,7 @@ label_jump:
 	jmp 0x800:0
 
 ;used functions
-	func_cls
+	func_setvideomode
 
 times 218-($-label_code0) db 0
 

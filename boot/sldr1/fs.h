@@ -122,16 +122,16 @@ u8 openfile(u8 drive,u32 part,char *path,u32 *pfile,u16 *blocksize,u32 *size)
 }
 
 u8 readfile(u8 drive,u32 part,u32 pfile,u32 blocks,
-	u32 blocksize,u8 *data,u32 *pnext,u32 *bytesread)
+	u16 blocksize,u8 *data,u32 *pnext,u32 *bytesread)
 {
 	u32 i;u8 buf[8192];
 	if(bytesread)*bytesread=0;
-	for(i=0;i<blocks&&pfile;i++)
+	for(i=0;(i<blocks)&&pfile;i++)
 	{
 		if(!readblock(drive,part,pfile,blocksize,buf))
 			return 0;
 		if(data){
-			memcpy(data,&(((struct fileblock*)buf)->data),
+			memcpy(data,((struct fileblock*)buf)->data,
 				((struct fileblock*)buf)->datasize);
 			data+=((struct fileblock*)buf)->datasize;
 		}

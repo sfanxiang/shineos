@@ -21,21 +21,47 @@ void error(char* msg,u8 halt)
 	}
 }
 
+void processbootcfg(char values[16][512],u8 valcnt)
+{
+	u8 i;
+	for(i=0;i<valcnt;i++)
+		_puts(values[i]),
+		_puts("\r\n");
+}
+
 void readbootcfg(u32 part)
 {
-	u16 blocksize;u32 pfile;
-	u8 values[16][512];
-	if(!openfile(currentdrive,part,
-		"/boot/sldr.cfg",&pfile,
-		&blocksize,NULL))
-		error("Cannot open \"/boot/sldr.cfg\".",1);
-	while(pfile)
+	char values[16][512];u8 valcnt;
 	{
+		u16 blocksize;u32 pfile;
 		u8 data[8192];u32 bytesread;
-		if(!readfile(currentdrive,part,pfile,1,
-			blocksize,data,&pfile,&bytesread)
-			error("Failed reading \"/boot/sldr.cfg\".",1);
+		u16 index;u32 i;
+		if(!openfile(currentdrive,part,
+			"boot/sldr.cfg",&pfile,
+			&blocksize,NULL))
+			error("Cannot open \"boot/sldr.cfg\".",1);
+		if(!readfile(currentdrive,part,pfile,
+			(u32)16,blocksize,data,NULL,
+			&bytesread))
+			error("Failed reading \"boot/sldr.cfg\".",1);
+		for(i=0,valcnt=0,index=0;i<bytesread;i++)
+		{
+			if(data[i]=='\n')
+			{
+				values[valcnt][index]=0;
+				index=0;
+				valcnt++;
+			}
+			else
+			{
+				values[valcnt][index]
+					=data[i];
+				index++;
+			}
+		}
+		if((i>0)&&(data[i-1]!='\n'))valcnt++;
 	}
+	processbootcfg(values,valcnt);
 }
 
 void loadactivepart()
@@ -43,8 +69,10 @@ void loadactivepart()
 	pfar ppartentry;
 	for(ppartentry=0x7dbe;ppartentry<=0x7dee;ppartentry+=0x10)
 		if(getfarbyte(ppartentry)==0x80)break;
-	if(ppartentry>0x7dee)error("No active partition found.",1);
-	if(getfarbyte(ppartentry+4)!=0x60)error("Active partition has an unknown file system.",1);
+	if(ppartentry>0x7dee)
+		error("No active partition found.",1);
+	if(getfarbyte(ppartentry+4)!=0x60)
+		error("Active partition has an unknown file system.",1);
 	readbootcfg(getfardword(ppartentry+8));
 }
 

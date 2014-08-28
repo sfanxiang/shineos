@@ -75,60 +75,13 @@ writestring:
 %endif
 %endmacro
 
-%macro func_scrollscreenup 0
-%ifndef _boot_display_inc_func_scrollscreenup_
-%define _boot_display_inc_func_scrollscreenup_
-scrollscreenup:
-	push bx
+%macro func_setvideomode 0
+%ifndef _boot_display_inc_func_setvideomode_
+%define _boot_display_inc_func_setvideomode_
+setvideomode:
+	mov ah,0
 	mov al,cl
-	mov bh,dl
-	mov cx,0
-	mov dx,0x1950
-	mov ah,6
-	int 0x10
-	pop bx
-	ret
-%endif
-%endmacro
-
-%macro func_setcursor 0
-%ifndef _boot_display_inc_func_setcursor_
-%define _boot_display_inc_func_setcursor_
-setcursor:
-	push bx
-	mov dx,cx
-	mov bh,0
-	mov ah,2
-	int 0x10
-	pop bx
-	ret
-%endif
-%endmacro
-
-%macro func_initscreen 0
-%ifndef _boot_display_inc_func_initscreen_
-%define _boot_display_inc_func_initscreen_
-initscreen:
-	mov ax,0x500
 	int 0x10
 	ret
-%endif
-%endmacro
-
-%macro func_cls 0
-%ifndef _boot_display_inc_func_cls_
-%define _boot_display_inc_func_cls_
-cls:
-	call initscreen
-	mov cl,0
-	mov dl,7
-	call scrollscreenup
-	mov cx,0
-	call setcursor
-	ret
-
-	func_initscreen
-	func_scrollscreenup
-	func_setcursor
 %endif
 %endmacro
