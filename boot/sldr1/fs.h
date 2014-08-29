@@ -126,6 +126,7 @@ u8 readfile(u8 drive,u32 part,u32 pfile,u32 blocks,
 {
 	u32 i;u8 buf[8192];
 	if(bytesread)*bytesread=0;
+	if(!pfile)return 0;
 	for(i=0;(i<blocks)&&pfile;i++)
 	{
 		if(!readblock(drive,part,pfile,blocksize,buf))

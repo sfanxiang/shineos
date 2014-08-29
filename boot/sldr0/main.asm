@@ -19,7 +19,7 @@ istruc dap
 	at dap.zero,db 0
 	at dap.sectors,dw 64
 	at dap.offset,dw 0
-	at dap.segment,dw 0x800
+	at dap.segment,dw 0x8000
 	at dap.startsector,dq 1
 iend
 	
@@ -61,8 +61,10 @@ label_jump:
 	mov ds,ax
 	mov es,ax
 	mov ss,ax
-
-	jmp 0x800:0
+	
+	push word [cs:readdrivepack0+dap.segment]
+	push word [cs:readdrivepack0+dap.offset]
+	retf
 
 ;used functions
 	func_setvideomode

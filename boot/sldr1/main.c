@@ -27,9 +27,26 @@ void error(char* msg,u8 halt)
 
 void loadimg(char *fullpath)
 {
-	_putchar('\n');
+	_puts("\nLoading ");
 	_puts(fullpath);
-	for(;;);
+	_puts(" ...\r\n");
+	
+	{
+		char *ptr;u32 part;
+		u16 blocksize;u32 pfile;
+		u8 data[0x4000];u32 bytesread;
+		u32 i;
+		if(!(ptr=strchr(fullpath,'/')))
+			error("Invalid path.",1);
+		part=getfardword((pfar)(0x7dbeL+atoi(fullpath)*10L+8L));
+		if(!openfile(currentdrive,part,ptr,&pfile,&blocksize,NULL))
+			error("Cannot open image file.",1);
+		if(!readfile(currentdrive,part,pfile,(u32)(sizeof(data)/blocksize),
+			blocksize,data,NULL,&bytesread))
+			error("Failed reading image file.",1);
+		for(i=0;i<bytesread;i++)
+			setfarbyte((pfar)(i+0x7c00),data[i]);
+	}
 }
 
 void processbootcfg(char values[16][512],u8 valcnt)
@@ -83,7 +100,6 @@ void processbootcfg(char values[16][512],u8 valcnt)
 	{
 		char str[GETS_MAX_CHARS+1];
 		do{
-			u8 i;
 			for(i=0;i<79;i++)_putchar(' ');
 			_puts("\rChoose one to load:");
 			_gets(str);
@@ -102,13 +118,13 @@ void readbootcfg(u32 part)
 		u8 data[8192];u32 bytesread;
 		u16 index;u32 i;
 		if(!openfile(currentdrive,part,
-			"boot/sldr.cfg",&pfile,
+			"/boot/sldr.cfg",&pfile,
 			&blocksize,NULL))
-			error("Cannot open \"boot/sldr.cfg\".",1);
+			error("Cannot open \"/boot/sldr.cfg\".",1);
 		if(!readfile(currentdrive,part,pfile,
-			(u32)16,blocksize,data,NULL,
+			(u32)(sizeof(data)/blocksize),blocksize,data,NULL,
 			&bytesread))
-			error("Failed reading \"boot/sldr.cfg\".",1);
+			error("Failed reading \"/boot/sldr.cfg\".",1);
 		for(i=0,valcnt=0,index=0;i<bytesread;i++)
 		{
 			if(data[i]=='\n')
@@ -161,8 +177,6 @@ void main()
 	
 	loadactivepart();
 	
-	for(;;);
-	
 	asm("\
 		mov dx,#0x7ff\n\
 		mov ds,dx\n\
@@ -172,6 +186,7 @@ void main()
 		dseg\n\
 		mov dx,[0]\n\
 		dseg\n\
-		mov di,[4]\
+		mov di,[4]\n\
+		jmpf 0x7c00,#0\
 	");
 }
