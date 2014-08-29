@@ -1,11 +1,15 @@
 asm("\
+	sti\n\
 	jmp near _main\
 ");
 
 #include "display.h"
 #include "drive.h"
 #include "fs.h"
+#include "keyboard.h"
 #include "memory.h"
+#include "time.h"
+#include <stdlib.h>
 
 u8 currentdrive;
 
@@ -21,12 +25,73 @@ void error(char* msg,u8 halt)
 	}
 }
 
+void loadimg(char *fullpath)
+{
+	_putchar('\n');
+	_puts(fullpath);
+	for(;;);
+}
+
 void processbootcfg(char values[16][512],u8 valcnt)
 {
-	u8 i;
-	for(i=0;i<valcnt;i++)
-		_puts(values[i]),
-		_puts("\r\n");
+	u8 choice,timeout,ok[16],itemcnt,i;
+	{
+		u8 okcnt;
+		for(i=0,okcnt=-1;i<valcnt;i++)
+			if(values[i][0])ok[++okcnt]=i;
+		choice=0xff;timeout=10;
+		for(i=itemcnt=0;i<okcnt;i+=2)
+		{
+			if(values[ok[i]][0]=='$')
+			{
+				if(!strcmp(&values[ok[i]][1],"default"))
+					choice=atoi(values[ok[i+1]]);
+				else if(!strcmp(&values[ok[i]][1],"timeout"))
+					timeout=atoi(values[ok[i+1]]);
+			}
+			else
+			{
+				_puts(itoa(itemcnt));
+				_putchar(':');
+				_puts(values[ok[i]]);
+				_puts("\r\n");
+				ok[itemcnt++]=ok[i+1];
+			}
+		}
+	}
+	if(choice<itemcnt)
+	{
+		u32 beginticks,curticks;
+		u32 waitticks;
+		beginticks=curticks=getclockticks(NULL);
+		waitticks=timeout*CLOCK_TICKS_PER_DAY/86400;
+		while(curticks-beginticks<waitticks)
+		{
+			curticks=getclockticks(NULL);
+			if(curticks<beginticks)curticks+=CLOCK_TICKS_PER_DAY;
+			_puts("Default:");
+			_puts(itoa(choice));
+			_puts("    Timeout:");
+			_puts(itoa((u16)(timeout-(curticks-beginticks)*86400/CLOCK_TICKS_PER_DAY)));
+			_puts("    \r");
+			if(checkkeystroke())
+				break;
+		}
+		if(curticks-beginticks>=waitticks)
+			loadimg(values[ok[choice]]);
+	}
+	{
+		char str[GETS_MAX_CHARS+1];
+		do{
+			u8 i;
+			for(i=0;i<79;i++)_putchar(' ');
+			_puts("\rChoose one to load:");
+			_gets(str);
+			_putchar('\r');
+		}while(str[0]<'0'||str[0]>'9'
+			||(choice=atoi(str))>=itemcnt);
+	}
+	loadimg(values[ok[choice]]);
 }
 
 void readbootcfg(u32 part)
