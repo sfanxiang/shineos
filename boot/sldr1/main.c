@@ -27,10 +27,6 @@ void error(char* msg,u8 halt)
 
 void loadimg(char *fullpath)
 {
-	_puts("\nLoading ");
-	_puts(fullpath);
-	_puts(" ...\r\n");
-	
 	{
 		char *ptr;u32 part;
 		u16 blocksize;u32 pfile;
@@ -104,12 +100,17 @@ void processbootcfg(char values[16][512],u8 valcnt)
 			_puts(itoa(choice));
 			_puts("    Timeout:");
 			_puts(itoa((u16)(timeout-(curticks-beginticks)*86400/CLOCK_TICKS_PER_DAY)));
-			_puts("    \r");
+			_puts("      \r");
 			if(checkkeystroke())
 				break;
 		}
 		if(curticks-beginticks>=waitticks)
-			loadimg(values[ok[choice]]);
+		{
+			_puts("Default:");
+			_puts(itoa(choice));
+			_puts("    Timeout:0\r");
+			goto preloadimg;
+		}
 	}
 	{
 		char str[GETS_MAX_CHARS+1];
@@ -121,6 +122,11 @@ void processbootcfg(char values[16][512],u8 valcnt)
 		}while(str[0]<'0'||str[0]>'9'
 			||(choice=atoi(str))>=itemcnt);
 	}
+	
+preloadimg:
+	_puts("\nLoading \"");
+	_puts(values[ok[choice]]);
+	_puts("\"...");
 	loadimg(values[ok[choice]]);
 }
 
