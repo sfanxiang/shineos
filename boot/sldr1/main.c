@@ -53,6 +53,7 @@ void loadimg(char *fullpath)
 		dseg\n\
 		mov di,[4]\n\
 		xor sp,sp\n\
+		cli\n\
 		jmpf 0x7c00,#0\
 	");
 }
