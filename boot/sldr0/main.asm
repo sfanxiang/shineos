@@ -61,6 +61,7 @@ label_jump:
 	mov ds,ax
 	mov es,ax
 	mov ss,ax
+	xor sp,sp
 	
 	push word [cs:readdrivepack0+dap.segment]
 	push word [cs:readdrivepack0+dap.offset]

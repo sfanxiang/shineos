@@ -47,6 +47,20 @@ void loadimg(char *fullpath)
 		for(i=0;i<bytesread;i++)
 			setfarbyte((pfar)(i+0x7c00),data[i]);
 	}
+	
+	asm("\
+		mov dx,#0x7fff\n\
+		mov ds,dx\n\
+		dseg\n\
+		mov dx,[2]\n\
+		mov es,dx\n\
+		dseg\n\
+		mov dx,[0]\n\
+		dseg\n\
+		mov di,[4]\n\
+		xor sp,sp\n\
+		jmpf 0x7c00,#0\
+	");
 }
 
 void processbootcfg(char values[16][512],u8 valcnt)
@@ -161,7 +175,7 @@ void main()
 {
 	asm("\
 		push ds\n\
-		mov ax,#0x7ff\n\
+		mov ax,#0x7fff\n\
 		mov ds,ax\n\
 		dseg\n\
 		mov [0],dx\n\
@@ -172,21 +186,8 @@ void main()
 		pop ds\
 	");
 
-	currentdrive=getfarbyte((pfar)0x7ff0);
+	currentdrive=getfarbyte((pfar)0x7fff0000L);
 	_puts("\r\n");
 	
 	loadactivepart();
-	
-	asm("\
-		mov dx,#0x7ff\n\
-		mov ds,dx\n\
-		dseg\n\
-		mov dx,[2]\n\
-		mov es,dx\n\
-		dseg\n\
-		mov dx,[0]\n\
-		dseg\n\
-		mov di,[4]\n\
-		jmpf 0x7c00,#0\
-	");
 }
