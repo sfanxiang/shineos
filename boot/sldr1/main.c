@@ -27,22 +27,20 @@ void error(char* msg,u8 halt)
 
 void loadimg(char *fullpath)
 {
-	{
-		char *ptr;u32 part;
-		u16 blocksize;u32 pfile;
-		u8 data[0x4000];u32 bytesread;
-		u32 i;
-		if(!(ptr=strchr(fullpath,'/')))
-			error("Invalid path.",1);
-		part=getfardword((pfar)(0x7dbeL+atoi(fullpath)*10L+8L));
-		if(!openfile(currentdrive,part,ptr,&pfile,&blocksize,NULL))
-			error("Cannot open image file.",1);
-		if(!readfile(currentdrive,part,pfile,(u32)(sizeof(data)/blocksize),
-			blocksize,data,NULL,&bytesread))
-			error("Failed reading image file.",1);
-		for(i=0;i<bytesread;i++)
-			setfarbyte((pfar)(i+0x7c00),data[i]);
-	}
+	char *ptr;u32 part;
+	u16 blocksize;u32 pfile;
+	u8 data[0x4000];u32 bytesread;
+	u32 i;
+	if(!(ptr=strchr(fullpath,'/')))
+		error("Invalid path.",1);
+	part=getfardword((pfar)(0x7dbeL+atoi(fullpath)*10L+8L));
+	if(!openfile(currentdrive,part,ptr,&pfile,&blocksize,NULL))
+		error("Cannot open image file.",1);
+	if(!readfile(currentdrive,part,pfile,(u32)(sizeof(data)/blocksize),
+		blocksize,data,NULL,&bytesread))
+		error("Failed reading image file.",1);
+	for(i=0;i<bytesread;i++)
+		setfarbyte((pfar)(i+0x7c00),data[i]);
 	
 	asm("\
 		mov dx,#0x7fff\n\
