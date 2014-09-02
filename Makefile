@@ -10,12 +10,12 @@ export CC16 = bcc -ansi -c -O
 export LD16_1 = ld86
 export LD16_2 = -d -L/usr/lib/bcc/ -lc
 
-all:cleanfs fs $(VM)/hd0
+all:cleanfs build $(VM)/hd0
 
 cleanfs:
 	rm -r $(FS)
 	
-fs:
+build:
 	cd boot && make
 
 tool:
