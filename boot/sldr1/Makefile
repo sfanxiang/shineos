@@ -1,7 +1,3 @@
-CC16 = bcc -ansi -c -O
-LD16_1 = ld86
-LD16_2 = -d -L/usr/lib/bcc/ -lc
-
 sldr1.bin : main.o
 	$(LD16_1) -o $@ $< $(LD16_2)
 

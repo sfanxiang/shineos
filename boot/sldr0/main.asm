@@ -1,6 +1,3 @@
-;boot/main.asm
-;sldr
-
 [bits 16]
 %include "display.inc"
 %include "drive.inc"

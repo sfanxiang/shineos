@@ -1,17 +1,25 @@
 #CC64 = gcc -c
 #OBJCOPY = objcopy -S -j .text -O binary
 
-OUTPUT = output
-VM = $(OUTPUT)/vm
+export OUTPUT = $(abspath output)
+export VM = $(abspath $(OUTPUT)/vm)
+export FS = $(abspath $(OUTPUT)/fs)
 
-all:_boot/sldr.bin $(VM)/hd0
+export ASM = nasm
+export CC16 = bcc -ansi -c -O
+export LD16_1 = ld86
+export LD16_2 = -d -L/usr/lib/bcc/ -lc
 
-_boot/sldr.bin:
+all:cleanfs fs $(VM)/hd0
+
+cleanfs:
+	rm -r $(FS)
+	
+fs:
 	cd boot && make
 
-$(VM)/hd0:boot/sldr.bin
-	dd if=$< of=$@ conv=notrunc
-	
 tool:
 	cd tools && make
 
+$(VM)/hd0:boot/sldr.bin
+	dd if=boot/sldr.bin of=$@ conv=notrunc

@@ -1,5 +1,5 @@
-;boot/drive.inc
-;real mode
+%ifndef _DRIVE_INC
+%define _DRIVE_INC
 
 struc dap
 	.size resb 1
@@ -50,3 +50,5 @@ readdrive:
 	ret
 %endif
 %endmacro
+
+%endif
