@@ -1,5 +1,5 @@
-%ifndef _DRIVE_INC
-%define _DRIVE_INC
+%ifndef DRIVE_INC
+%define DRIVE_INC
 
 struc dap
 	.size resb 1

@@ -1,5 +1,5 @@
-#ifndef _DRIVE_H
-#define _DRIVE_H
+#ifndef DRIVE_H
+#define DRIVE_H
 
 #include "memory.h"
 

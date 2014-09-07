@@ -1,5 +1,5 @@
-%ifndef _DISPLAY_INC
-%define _DISPLAY_INC
+%ifndef DISPLAY_INC
+%define DISPLAY_INC
 
 %macro func_putchar 0
 %ifndef _boot_display_inc_func_putchar_

@@ -1,5 +1,5 @@
-#ifndef _FS_H
-#define _FS_H
+#ifndef FS_H
+#define FS_H
 
 #include "drive.h"
 #include "memory.h"

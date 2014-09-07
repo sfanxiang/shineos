@@ -1,5 +1,5 @@
-%ifndef _STD_INC
-%define _STD_INC
+%ifndef STD_INC
+%define STD_INC
 
 ;@b, @f support
 	%idefine @b %$B
