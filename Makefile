@@ -1,6 +1,3 @@
-#CC64 = gcc -c
-#OBJCOPY = objcopy -S -j .text -O binary
-
 export OUTPUT = $(abspath output)
 
 export ASM = nasm
