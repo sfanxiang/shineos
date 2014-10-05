@@ -15,7 +15,7 @@ int main(int argc,char *argv[])
 	{
 		writefs wfs;
 		wfs.open(argv[1]);
-		if(!wfs.writetree(argv[2],0x100,2))	//todo
+		if(!wfs.writepart(argv[2],wfs.getpart(0),2,64))	//todo
 		{
 			cout<<"Failed."<<endl;
 			return 1;

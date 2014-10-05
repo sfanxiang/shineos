@@ -33,7 +33,7 @@ void loadimg(char *fullpath)
 	u32 i;
 	if(!(ptr=strchr(fullpath,'/')))
 		error("Invalid path.",1);
-	part=getfardword((pfar)(0x7dbeL+atoi(fullpath)*10L+8L));
+	part=getfardword((pfar)(0x7dbeL+atoi(fullpath)*(u32)sizeof(struct partentry)+(u32)offsetof(struct partentry,firstlba)));
 	if(!openfile(currentdrive,part,ptr,&pfile,&blocksize,NULL))
 		error("Cannot open image file.",1);
 	if(!readfile(currentdrive,part,pfile,(u32)(sizeof(data)/blocksize),
@@ -125,7 +125,7 @@ void processbootcfg(char values[16][512],u8 valcnt)
 preloadimg:
 	_puts("\nLoading \"");
 	_puts(values[ok[choice]]);
-	_puts("\"...");
+	_puts("\"...\r\n");
 	loadimg(values[ok[choice]]);
 }
 
@@ -167,13 +167,13 @@ void readbootcfg(u32 part)
 void loadactivepart()
 {
 	pfar ppartentry;
-	for(ppartentry=0x7dbe;ppartentry<=0x7dee;ppartentry+=0x10)
+	for(ppartentry=0x7dbe;ppartentry<0x7dfe;ppartentry+=(u32)sizeof(struct partentry))
 		if(getfarbyte(ppartentry)==0x80)break;
 	if(ppartentry>0x7dee)
 		error("No active partition found.",1);
-	if(getfarbyte(ppartentry+4)!=0x60)
+	if(getfarbyte(ppartentry+(u32)offsetof(struct partentry,type))!=0x60)
 		error("Active partition has an unknown file system.",1);
-	readbootcfg(getfardword(ppartentry+8));
+	readbootcfg(getfardword(ppartentry+(u32)offsetof(struct partentry,firstlba)));
 }
 
 void main()

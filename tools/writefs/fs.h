@@ -14,18 +14,37 @@ using namespace std;
 
 #include "types.h"
 
+#define HD_SECTOR_SIZE 512
+
+#define FS_MAGIC ('s'+('f'<<8))
 #define FS_START_RESERVED 64
 
 class writefs{
 public:
 #pragma pack(push)
 #pragma pack(1)
+	struct partentry{
+		u8 status;	//0x00:inactive,0x80:active
+		u8 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
+		u32 firstlba,sectors;
+	};
+	
+	struct mbr{
+		u8 code1[218];
+		u8 resv[6];
+		u8 code2[216];
+		u32 disksign;
+		u16 copy_protect;
+		partentry parttable[4];
+		u16 bootsign;
+	};
+
 	struct superdesc{
 		u16 magic;
 		u32 blockcount;
 		u16 state;
 		u16 blocksize;
-		u32 pdiskalloc;
+		u32 palloc;
 		u32 proot;
 		u64 wtime;
 		char name[];
@@ -69,20 +88,30 @@ public:
 		file.close();
 	}
 	
+	u32 getpart(u8 index)
+	{
+		file.seekg(offsetof(mbr,parttable[0])+sizeof(partentry)*index+offsetof(partentry,firstlba));
+		if(file.fail())return 0;
+		u32 part;
+		file.read((char*)&part,sizeof(part));
+		return part;
+	}
+	
 	bool writeblock(u32 part,u32 block,u16 blocksize,u16 offset,u64 bytes,void *src)
 	{
-		file.seekp((part+FS_START_RESERVED+block*blocksize)*512+offset);
+		file.seekp((part+FS_START_RESERVED+block*blocksize)*HD_SECTOR_SIZE+offset);
 		if(file.fail())return false;
 		file.write((char*)src,bytes);
 		if(file.fail())return false;
 		return true;
 	}
 	
-	bool writefileblocks(string fn,u32 pfiledesc,u32 part,u32 block,u16 blocksize)
+	u32 writefileblocks(string fn,u32 pfiledesc,u32 part,u32 block,u16 blocksize)
 	{
+		u32 orgblock=block;
 		ifstream fin(fn.c_str(),ios::binary);
-		u8 cur[blocksize*512-offsetof(fileblock,data)];
-		u8 fblock[blocksize*512];
+		u8 cur[blocksize*HD_SECTOR_SIZE-offsetof(fileblock,data)];
+		u8 fblock[blocksize*HD_SECTOR_SIZE];
 		bool first=true;
 		do
 		{
@@ -100,11 +129,11 @@ public:
 			memcpy(((fileblock*)fblock)->data,cur,((fileblock*)fblock)->datasize);
 			
 			if(!writeblock(part,block,blocksize,0,offsetof(fileblock,data)+((fileblock*)fblock)->datasize,fblock))
-				return false;
+				return 0;
 			first=false;
 			block++;
 		}while(fin.peek()!=EOF);
-		return true;
+		return block-orgblock;
 	}
 	
 private:
@@ -158,13 +187,13 @@ public:
 					}
 					else
 					{
-						if(!writeblock(part,wq.front().block,blocksize,offsetof(treedesc,pnext),
+						if(!writeblock(part,wq.back().block,blocksize,offsetof(treedesc,pnext),
 							sizeof(usedblocks),&usedblocks))
 						{
 							closedir(dir);
 							return false;
 						}
-						((treedesc*)cur)->pprev=wq.front().block;
+						((treedesc*)cur)->pprev=wq.back().block;
 					}
 					strcpy(((treedesc*)cur)->name,dent->d_name);
 					if(!writeblock(part,usedblocks,blocksize,0,sizeof(cur),cur))
@@ -193,13 +222,30 @@ public:
 				
 				if(!writeblock(part,usedblocks,blocksize,0,sizeof(fdesc),&fdesc))
 					return false;
-							
-				if(!writefileblocks(x.path,usedblocks,part,usedblocks+1,blocksize))
+				
+				u32 blockswrote=writefileblocks(x.path,usedblocks,part,usedblocks+1,blocksize);	
+				if(!blockswrote)
 					return false;
-				usedblocks+=s.st_size;
+				usedblocks+=blockswrote;
 			}
 		}
+		//todo: write alloc
 		return true;
+	}
+	
+	bool writepart(string path,u32 part,u16 blocksize,u32 blockcount)
+	{
+		u8 sdesc[sizeof(superdesc)+1];
+		((superdesc*)sdesc)->magic=FS_MAGIC;
+		((superdesc*)sdesc)->blockcount=blockcount;
+		((superdesc*)sdesc)->state=0;
+		((superdesc*)sdesc)->blocksize=blocksize;
+		((superdesc*)sdesc)->proot=1;
+		((superdesc*)sdesc)->wtime=0;	//todo
+		((superdesc*)sdesc)->name[0]=0;
+		if(!writeblock(part,0,blocksize,0,sizeof(sdesc),sdesc))
+			return false;
+		return writetree(path,part,blocksize);
 	}
 };
 

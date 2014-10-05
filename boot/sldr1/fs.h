@@ -6,13 +6,14 @@
 
 #include <string.h>
 
+#define FS_PART_ID 0x60
 #define FS_START_RESERVED 64
 struct superdesc{
 	u16 magic;
 	u32 blockcount;
 	u16 state;
 	u16 blocksize;	//bytes per block = blocksize*512
-	u32 pdiskalloc;
+	u32 palloc;
 	u32 proot;
 	u32 wtimelow,wtimehigh;
 	char name[];
