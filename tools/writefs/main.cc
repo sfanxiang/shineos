@@ -11,7 +11,7 @@ int main(int argc,char *argv[])
 	{
 		cout<<"\
 Too few argument(s).\n\
-Usage: <target> <dir> <partation index> <block size> <part size>\n";
+Usage: <target> <dir> <partition index> <block size> <part size>\n";
 		return 1;
 	}
 	else
