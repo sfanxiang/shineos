@@ -8,4 +8,4 @@ $(OUTPUT)/vm/hd0:$(OUTPUT)/boot/sldr.bin
 	dd if=$< of=$@ conv=notrunc
 
 _writefs:
-	$(OUTPUT)/tools/writefs $(OUTPUT)/vm/hd0 $(OUTPUT)/fs
+	$(OUTPUT)/tools/writefs $(OUTPUT)/vm/hd0 $(OUTPUT)/fs 0 2 64
