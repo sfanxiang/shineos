@@ -4,6 +4,10 @@
 #include "defines.h"
 #include "display.h"
 
+#define GETS_MAX_CHARS 8
+
+#ifdef __AS386_16__
+
 char checkkeystroke()
 {
 	asm("\
@@ -22,8 +26,6 @@ char getkeystroke()
 		int #0x16\
 	");
 }
-
-#define GETS_MAX_CHARS 8
 
 char* _gets(char *str)
 {
@@ -53,5 +55,7 @@ char* _gets(char *str)
 	if(head)*str=0;
 	return head;
 }
+
+#endif
 
 #endif

@@ -8,6 +8,7 @@
 
 #define FS_PART_ID 0x60
 #define FS_START_RESERVED 64
+
 struct superdesc{
 	u16 magic;
 	u32 blockcount;

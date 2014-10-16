@@ -7,7 +7,7 @@ export CPPCUR = g++ -O2
 export LD16_1 = ld86
 export LD16_2 = -d -L/usr/lib/bcc/ -lc
 
-all:init _boot _fs _tools _vm
+all:init _boot _config _tools _vm
 
 init:
 	mkdir -p $(OUTPUT)/boot
@@ -20,9 +20,9 @@ init:
 	
 _boot:
 	cd boot && make
-
-_fs:
-	cd fs && make
+	
+_config:
+	cd config && make
 
 _tools:
 	cd tools && make

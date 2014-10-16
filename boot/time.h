@@ -5,6 +5,8 @@
 
 #define CLOCK_TICKS_PER_DAY 0x1800B0
 
+#ifdef __AS386_16__
+
 u32 getclockticks(u8 *midnight)
 {
 	asm("\
@@ -22,5 +24,7 @@ u32 getclockticks(u8 *midnight)
 		pop bp\
 	");
 }
+
+#endif
 
 #endif

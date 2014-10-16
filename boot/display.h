@@ -1,5 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
+
+#ifdef __AS386_16__
+
 void _putchar(char chr)
 {
 	asm("\
@@ -24,5 +27,10 @@ void _puts(char* str)
 		str++;
 	}
 }
+
 #endif
 
+#ifdef __AS386_32__
+#endif
+
+#endif

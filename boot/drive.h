@@ -16,6 +16,8 @@ struct partentry{
 	u32 firstlba,sectors;
 };
 
+#ifdef __AS386_16__
+
 u8 readdrivesectors(u8 drive,struct dap *data)
 {
 	asm("\
@@ -40,5 +42,10 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 		pop bp\
 	");
 }
+
 #endif
 
+#ifdef __AS386_32__
+#endif
+
+#endif
