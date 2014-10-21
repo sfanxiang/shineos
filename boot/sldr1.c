@@ -29,7 +29,7 @@ void loadimg(char *fullpath)
 {
 	char *ptr;u32 part;
 	u16 blocksize;u32 pfile;
-	u8 data[0x4000];u32 bytesread;
+	u8 data[0x6000];u32 bytesread;
 	u32 i;
 	if(!(ptr=strchr(fullpath,'/')))
 		error("Invalid path.",1);
@@ -43,6 +43,7 @@ void loadimg(char *fullpath)
 		setfarbyte((pfar)(i+0x7c00),data[i]);
 	
 	asm("\
+		cli\n\
 		mov dx,#0x7fff\n\
 		mov ds,dx\n\
 		dseg\n\
@@ -52,8 +53,10 @@ void loadimg(char *fullpath)
 		mov dx,[0]\n\
 		dseg\n\
 		mov di,[4]\n\
+		mov ax,#0\n\
+		mov ds,ax\n\
+		mov ss,ax\n\
 		xor sp,sp\n\
-		cli\n\
 		jmpf 0x7c00,#0\
 	");
 }

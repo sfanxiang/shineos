@@ -2,10 +2,12 @@ export OUTPUT = $(abspath output)
 
 export ASM = nasm
 export CC16 = bcc -ansi -c -O
-export CCCUR = gcc -O2 
+export CC32 = bcc -3 -ansi -c -O
 export CPPCUR = g++ -O2 
-export LD16_1 = ld86
-export LD16_2 = -d -L/usr/lib/bcc/ -lc
+export LD16_1 = ld86 -d 
+export LD16_2 = -L/usr/lib/bcc/ -lc
+export LD32_1 = ld86 -d
+export LD32_2 = -L/usr/lib/bcc/i386/ -lc
 
 all:init _boot _config _tools _vm
 
