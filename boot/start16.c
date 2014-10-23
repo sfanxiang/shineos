@@ -28,6 +28,7 @@ void main16()
 	enable_a20();
 	
 	asm("\
+		mov cl,[_thispart]\n\
 		cli\n\
 		mov eax,cr0\n\
 		or eax,#1\n\
