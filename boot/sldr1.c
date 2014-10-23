@@ -11,6 +11,7 @@ asm("\
 #include "time.h"
 #include <stdlib.h>
 
+u16 org_dx,org_es,org_di;
 u8 currentdrive;
 
 void error(char* msg,u8 halt)
@@ -44,15 +45,13 @@ void loadimg(char *fullpath)
 	
 	asm("\
 		cli\n\
-		mov dx,#0x7fff\n\
-		mov ds,dx\n\
 		dseg\n\
-		mov dx,[2]\n\
+		mov dx,[_org_es]\n\
 		mov es,dx\n\
 		dseg\n\
-		mov dx,[0]\n\
+		mov dx,[_org_dx]\n\
 		dseg\n\
-		mov di,[4]\n\
+		mov di,[_org_di]\n\
 		mov ax,#0\n\
 		mov ds,ax\n\
 		mov ss,ax\n\
@@ -182,19 +181,15 @@ void loadactivepart()
 void main()
 {
 	asm("\
-		push ds\n\
-		mov ax,#0x7fff\n\
-		mov ds,ax\n\
 		dseg\n\
-		mov [0],dx\n\
+		mov [_org_dx],dx\n\
 		dseg\n\
-		mov [2],es\n\
+		mov [_org_es],es\n\
 		dseg\n\
-		mov [4],di\n\
-		pop ds\
+		mov [_org_di],di\n\
 	");
 
-	currentdrive=getfarbyte((pfar)0x7fff0000L);
+	currentdrive=(u8)org_dx;
 	_puts("\r\n");
 	
 	loadactivepart();
