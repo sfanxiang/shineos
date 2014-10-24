@@ -34,8 +34,8 @@ void main()
 	*(u32*)(gdt_desc_empty+sizeof(SEG_DESC_LO(0,0)))=SEG_DESC_HI(0,0,0);
 	*(u32*)gdt_desc_code=SEG_DESC_LO(segbase32,0xf);
 	*(u32*)(gdt_desc_code+sizeof(SEG_DESC_LO(0,0)))=SEG_DESC_HI(segbase32,0xf,SEG_DESC_ATTR_FLAT_C);
-	*(u32*)gdt_desc_data=SEG_DESC_LO(0x80000,0xf);
-	*(u32*)(gdt_desc_data+sizeof(SEG_DESC_LO(0,0)))=SEG_DESC_HI(0x80000,0xf,SEG_DESC_ATTR_FLAT_D);
+	*(u32*)gdt_desc_data=SEG_DESC_LO(segbase32,0xf);
+	*(u32*)(gdt_desc_data+sizeof(SEG_DESC_LO(0,0)))=SEG_DESC_HI(segbase32,0xf,SEG_DESC_ATTR_FLAT_D);
 	*(u32*)gdt_desc_video=SEG_DESC_LO(0xb8000,0xf);
 	*(u32*)(gdt_desc_video+sizeof(SEG_DESC_LO(0,0)))=SEG_DESC_HI(0xb8000,0xf,SEG_DESC_ATTR_FLAT_D);
 	
