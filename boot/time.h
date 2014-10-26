@@ -14,7 +14,7 @@ u32 getclockticks(u8 *midnight)
 		mov bp,sp\n\
 		xor ah,ah\n\
 		int #0x1a\n\
-		mov bp,4[bp]\n\
+		mov bp,[bp+4]\n\
 		cmp bp,#0\n\
 		jz getclockticks_skipmidnight\n\
 		mov [bp],al\n\

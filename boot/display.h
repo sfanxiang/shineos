@@ -10,7 +10,7 @@ void _putchar(char chr)
 		mov bp,sp\n\
 		push bx\n\
 		sseg\n\
-		mov al,4[bp]\n\
+		mov al,[bp+4]\n\
 		mov bx,#7\n\
 		mov ah,#0xe\n\
 		int #0x10\n\
@@ -18,6 +18,80 @@ void _putchar(char chr)
 		pop bp\
 	");
 }
+
+#endif
+
+/*
+#ifdef __AS386_32__
+
+u16 getcursorpos()
+{
+	asm("\
+		mov al,#0xe\n\
+		mov dx,#0x3d4\n\
+		out dx,al\n\
+		inc dx\n\
+		in al,dx\n\
+		mov ch,al\n\
+		\n\
+		mov al,#0xf\n\
+		dec dx\n\
+		out dx,al\n\
+		inc dx\n\
+		in al,dx\n\
+		mov ah,ch\
+	");
+}
+
+void setcursorpos(u16 pos)
+{
+	asm("\
+		push ebp\n\
+		mov ebp,esp\n\
+		\n\
+		mov al,#0xe\n\
+		mov dx,#0x3d4\n\
+		out dx,al\n\
+		sseg\n\
+		mov al,[ebp+8+1]\n\
+		inc dx\n\
+		out dx,al\n\
+		\n\
+		mov al,#0xf\n\
+		dec dx\n\
+		out dx,al\n\
+		sseg\n\
+		mov al,[ebp+8]\n\
+		inc dx\n\
+		out dx,al\n\
+		\n\
+		pop ebp\
+	");
+}
+
+void writechar(char chr,u16 pos)
+{
+	asm("\
+		push ebp\n\
+		mov ebp,esp\n\
+		mov al,[ebp+8]\n\
+		mov bp,[ebp+8+4]\n\
+		shl bp,1\n\
+		gseg\n\
+		mov [bp],al\n\
+		pop ebp\
+	");
+}
+
+void _putchar(char chr)
+{
+	u16 pos=getcursorpos();
+	writechar(chr,pos);
+	setcursorpos(pos+1);
+}
+
+#endif
+*/
 
 void _puts(char* str)
 {
@@ -27,10 +101,5 @@ void _puts(char* str)
 		str++;
 	}
 }
-
-#endif
-
-#ifdef __AS386_32__
-#endif
 
 #endif

@@ -27,9 +27,9 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 		mov si,cs\n\
 		mov ds,si\n\
 		sseg\n\
-		mov si,6[bp]\n\
+		mov si,[bp+6]\n\
 		sseg\n\
-		mov dl,4[bp]\n\
+		mov dl,[bp+4]\n\
 		mov ah,#0x42\n\
 		int #0x13\n\
 		jc readdrivesectors_error\n\
@@ -43,9 +43,6 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 	");
 }
 
-#endif
-
-#ifdef __AS386_32__
 #endif
 
 #endif
