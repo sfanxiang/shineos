@@ -24,6 +24,8 @@ reserved times 32-($-label_code0) db 0
 label_code0_start:
 	jmp 0x7c0:label_jump
 label_jump:
+	sti
+	
 	mov ax,0x7c0
 	mov ss,ax
 	mov sp,0xe000
