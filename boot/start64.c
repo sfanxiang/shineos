@@ -11,6 +11,6 @@ __asm__(
 void main()
 {
 	//test
-	u16 cursor=getcursorpos();
+	_puts("start");
 	for(;;);
 }

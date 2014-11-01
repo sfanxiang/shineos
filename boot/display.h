@@ -98,8 +98,16 @@ void _putchar(char chr)
 #ifdef __AS386_64__
 
 extern u16 getcursorpos();
-//extern void setcursorpos(u16 pos);
-extern u16 _putchar();
+extern void setcursorpos(u16 pos);
+extern void writechar(char chr,u16 pos);
+
+void _putchar(char chr)
+{
+	u16 cursor=getcursorpos();
+	writechar(chr,cursor);
+	setcursorpos(cursor+1);
+	//todo
+}
 
 #endif
 

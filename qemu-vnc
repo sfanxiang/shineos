@@ -1,2 +1,2 @@
 #!/bin/sh
-qemu-system-x86_64 -hda output/images/hd0 -boot d -monitor stdio -vnc localhost:1 $*
+qemu-system-x86_64 -hda output/images/hd0 -boot d -monitor stdio -vnc 127.0.0.1:1 $*

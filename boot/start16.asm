@@ -44,9 +44,9 @@ gdt_code32:
 gdt_data32:
 	dq 0x00c09200000000ff
 gdt_code64:
-	dq 0x00a09a00000000ff
+	dq 0x00209a0000000000
 gdt_data64:
-	dq 0x00a09200000000ff
+	dq 0x0020920000000000
 
 gdt_ptr:
 	dw $-gdt-1
