@@ -1,5 +1,4 @@
 asm("\
-	sti\n\
 	jmp near _main\
 ");
 
@@ -22,7 +21,11 @@ void error(char* msg,u8 halt)
 	if(halt)
 	{
 		_puts("SLDR: System halted.\r\n");
-		for(;;);
+		asm("\
+		error_halt:\n\
+			hlt\n\
+			jmp error_halt\
+		");
 	}
 }
 
