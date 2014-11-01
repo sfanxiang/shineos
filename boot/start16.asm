@@ -16,6 +16,9 @@ real:
 	mov ss,ax
 	mov sp,real
 	
+	mov ax,3
+	int 0x10
+	
 	lgdt [gdt_ptr]
 	
 	in al,0x92
