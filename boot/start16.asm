@@ -28,7 +28,7 @@ real:
 	nop
 	nop
 	
-	;lidt [idt]
+	lidt [idt]
 	
 	mov eax,cr0
 	or eax,1
@@ -44,17 +44,17 @@ gdt_code32:
 gdt_data32:
 	dq 0x00c09200000000ff
 gdt_code64:
-	dq 0x00209a0000000000
+	dq 0x00a09a00000000ff
 gdt_data64:
-	dq 0x0020920000000000
+	dq 0x00a09200000000ff
 
 gdt_ptr:
 	dw $-gdt-1
 	dd gdt
 
-;idt:
-;	dw 0
-;	dd 0
+idt:
+	dw 0
+	dd 0
 	
 bits 32
 protected:
@@ -127,8 +127,3 @@ long_start:
 	mov ax,SEL_DATA64
 	mov ds,ax
 	mov ss,ax
-	mov rsp,0x70000
-	
-	mov byte [0xb8000],'L'
-	
-	jmp $

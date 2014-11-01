@@ -1,0 +1,2 @@
+#!/bin/sh
+qemu-system-x86_64 -hda output/images/hd0 -boot d -monitor stdio $*

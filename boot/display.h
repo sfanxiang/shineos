@@ -1,6 +1,8 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
+#include "defines.h"
+
 #ifdef __AS386_16__
 
 void _putchar(char chr)
@@ -92,6 +94,14 @@ void _putchar(char chr)
 
 #endif
 */
+
+#ifdef __AS386_64__
+
+extern u16 getcursorpos();
+//extern void setcursorpos(u16 pos);
+extern u16 _putchar();
+
+#endif
 
 void _puts(char* str)
 {

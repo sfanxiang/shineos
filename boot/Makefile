@@ -11,9 +11,20 @@ $(OUTPUT)/boot/sldr1.bin:sldr1.c defines.h display.h drive.h fs.h keyboard.h mem
 $(OUTPUT)/boot/sldr.bin:$(OUTPUT)/boot/sldr0.bin $(OUTPUT)/boot/sldr1.bin
 	cat $(OUTPUT)/boot/sldr0.bin $(OUTPUT)/boot/sldr1.bin > $@
 
-$(OUTPUT)/fs/sys/start:$(OUTPUT)/fs/sys/start16
-	mv $< $@
+$(OUTPUT)/fs/sys/start:$(OUTPUT)/fs/sys/start16 $(OUTPUT)/fs/sys/start64
+	cat $(OUTPUT)/fs/sys/start16 $(OUTPUT)/fs/sys/start64 > $@
+	rm $(OUTPUT)/fs/sys/start16
+	rm $(OUTPUT)/fs/sys/start64
 
 $(OUTPUT)/fs/sys/start16:start16.asm
 	mkdir -p $(OUTPUT)/fs/sys
 	$(ASM) -o $@ $<
+
+$(OUTPUT)/fs/sys/start64:start64.c $(OUTPUT)/fs/sys/display.o
+	$(CC64) -o $@.o $< $(OUTPUT)/fs/sys/display.o
+	$(CC64_STRIP) of=$@ if=$@.o
+	rm $@.o
+	rm $(OUTPUT)/fs/sys/display.o
+
+$(OUTPUT)/fs/sys/display.o:display.asm
+	nasm -f elf64 -o $@ $<

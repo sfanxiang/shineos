@@ -85,32 +85,6 @@ pfar setfarbyte(pfar ptr,u8 val)
 	");
 }
 
-void enable_a20()
-{
-	asm("\
-		in al,#0x92\n\
-		or al,#2\n\
-		out #0x92,al\
-	");
-}
-
-void lgdt(void *gdtptr)
-{
-	asm("\
-		push bp\n\
-		mov bp,sp\n\
-		mov bp,[bp+4]\n\
-		sseg\n\
-		lgdt [bp]\n\
-		pop bp\
-	");
-}
-
-u16 getsegaddr()
-{
-	asm("mov ax,cs");
-}
-
 #endif
 
 #endif
