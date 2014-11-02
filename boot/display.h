@@ -23,90 +23,41 @@ void _putchar(char chr)
 
 #endif
 
-/*
-#ifdef __AS386_32__
-
-u16 getcursorpos()
-{
-	asm("\
-		mov al,#0xe\n\
-		mov dx,#0x3d4\n\
-		out dx,al\n\
-		inc dx\n\
-		in al,dx\n\
-		mov ch,al\n\
-		\n\
-		mov al,#0xf\n\
-		dec dx\n\
-		out dx,al\n\
-		inc dx\n\
-		in al,dx\n\
-		mov ah,ch\
-	");
-}
-
-void setcursorpos(u16 pos)
-{
-	asm("\
-		push ebp\n\
-		mov ebp,esp\n\
-		\n\
-		mov al,#0xe\n\
-		mov dx,#0x3d4\n\
-		out dx,al\n\
-		sseg\n\
-		mov al,[ebp+8+1]\n\
-		inc dx\n\
-		out dx,al\n\
-		\n\
-		mov al,#0xf\n\
-		dec dx\n\
-		out dx,al\n\
-		sseg\n\
-		mov al,[ebp+8]\n\
-		inc dx\n\
-		out dx,al\n\
-		\n\
-		pop ebp\
-	");
-}
-
-void writechar(char chr,u16 pos)
-{
-	asm("\
-		push ebp\n\
-		mov ebp,esp\n\
-		mov al,[ebp+8]\n\
-		mov bp,[ebp+8+4]\n\
-		shl bp,1\n\
-		gseg\n\
-		mov [bp],al\n\
-		pop ebp\
-	");
-}
-
-void _putchar(char chr)
-{
-	u16 pos=getcursorpos();
-	writechar(chr,pos);
-	setcursorpos(pos+1);
-}
-
-#endif
-*/
-
 #ifdef __AS386_64__
+
+#include "string.h"
+
+#define SCREEN_XMAX 80
+#define SCREEN_YMAX 25
 
 extern u16 getcursorpos();
 extern void setcursorpos(u16 pos);
 extern void writechar(char chr,u16 pos);
 
+void scrollscreen(u8 num)
+{
+	memcpy((void*)0xb8000,(void*)(0xb8000+num*SCREEN_XMAX*2),(SCREEN_XMAX*SCREEN_YMAX-num*SCREEN_XMAX)*2);
+	u16 *p;
+	for(p=(void*)(0xb8000+(SCREEN_XMAX*SCREEN_YMAX-num*SCREEN_XMAX)*2);p<(void*)(0xb8000+(SCREEN_XMAX*SCREEN_YMAX)*2);p++)
+		*p=0x720;
+}
+
 void _putchar(char chr)
 {
 	u16 cursor=getcursorpos();
-	writechar(chr,cursor);
-	setcursorpos(cursor+1);
-	//todo
+	if(chr=='\n')
+		cursor=cursor-cursor%SCREEN_XMAX+SCREEN_XMAX;
+	else
+	{
+		writechar(chr,cursor);
+		cursor++;
+	}
+	if(cursor>=SCREEN_XMAX*SCREEN_YMAX)
+	{
+		scrollscreen(1);
+		cursor-=SCREEN_XMAX;
+	}
+	setcursorpos(cursor);
 }
 
 #endif

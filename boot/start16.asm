@@ -129,4 +129,7 @@ bits 64
 long_start:
 	mov ax,SEL_DATA64
 	mov ds,ax
+	mov es,ax
+	mov fs,ax
+	mov gs,ax
 	mov ss,ax

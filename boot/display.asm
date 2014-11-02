@@ -47,6 +47,6 @@ setcursorpos:
 global writechar
 writechar:
 	mov ax,di
-	movsx rsi,si
+	movzx rsi,si
 	mov [0xb8000+rsi*2],al
 	ret

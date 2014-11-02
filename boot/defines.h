@@ -23,6 +23,8 @@ typedef int s32;
 typedef unsigned long u64;
 typedef long s64;
 
+typedef u64 size_t;
+
 #endif
 
 #define offsetof(st, m) ((size_t)(&((st *)0)->m))
