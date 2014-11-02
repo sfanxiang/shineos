@@ -10,6 +10,6 @@ __asm__(
 
 void main()
 {
-	_puts("Starting ShineOS...\n");
+	puts("Starting ShineOS...\n");
 	for(;;);
 }

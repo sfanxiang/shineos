@@ -21,6 +21,15 @@ void _putchar(char chr)
 	");
 }
 
+void _puts(char* str)
+{
+	while(*str)
+	{
+		_putchar(*str);
+		str++;
+	}
+}
+
 #endif
 
 #ifdef __AS386_64__
@@ -42,7 +51,7 @@ void scrollscreen(u8 num)
 		*p=0x720;
 }
 
-void _putchar(char chr)
+void putchar(char chr)
 {
 	u16 cursor=getcursorpos();
 	if(chr=='\n')
@@ -60,15 +69,16 @@ void _putchar(char chr)
 	setcursorpos(cursor);
 }
 
-#endif
 
-void _puts(char* str)
+void puts(char* str)
 {
 	while(*str)
 	{
-		_putchar(*str);
+		putchar(*str);
 		str++;
 	}
 }
+
+#endif
 
 #endif
