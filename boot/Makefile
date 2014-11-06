@@ -20,15 +20,19 @@ $(OUTPUT)/fs/sys/start16:start16.asm
 	mkdir -p $(OUTPUT)/fs/sys
 	$(ASM) -o $@ $<
 
-$(OUTPUT)/fs/sys/start64:start64.c $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o
-	$(CC64) -o $@.o $< $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o
+$(OUTPUT)/fs/sys/start64:start64.c $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o $(OUTPUT)/fs/sys/io.o
+	$(CC64) -o $@.o $< $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o $(OUTPUT)/fs/sys/io.o
 	$(CC64_STRIP) of=$@ if=$@.o
 	rm $@.o
 	rm $(OUTPUT)/fs/sys/display.o
 	rm $(OUTPUT)/fs/sys/string.o
+	rm $(OUTPUT)/fs/sys/io.o
 
 $(OUTPUT)/fs/sys/display.o:display.asm
 	nasm -f elf64 -o $@ $<
 
 $(OUTPUT)/fs/sys/string.o:string.asm
+	nasm -f elf64 -o $@ $<
+
+$(OUTPUT)/fs/sys/io.o:io.asm
 	nasm -f elf64 -o $@ $<

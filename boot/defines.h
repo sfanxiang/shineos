@@ -27,6 +27,14 @@ typedef u64 size_t;
 
 #endif
 
-#define offsetof(st, m) ((size_t)(&((st *)0)->m))
+#define offsetof(st,m) ((size_t)(&((st *)0)->m))
+
+#define bitsrange(val,h,r) ((val<<(sizeof(val)*8-r-1))>>(sizeof(val)*8-r-1+h))
+
+#define to8bit(n) (bitsrange(n,0,7))
+#define to16bit(n) (bitsrange(n,0,15))
+#define to32bit(n) (bitsrange(n,0,31))
+#define to64bit(n) (bitsrange(n,0,63))
+#define testbit(n,b) (bitsrange(n,b,b))
 
 #endif
