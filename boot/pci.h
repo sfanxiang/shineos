@@ -35,7 +35,7 @@ struct pci_std{
 u32 readpciconfig(u8 bus,u8 slot,u8 func,u8 reg)
 {
 	out32(0xcf8,(((u32)bus<<16)|((u32)slot<<11)|
-		((u32)func<<8)|((u32)reg&0xfc)|
+		((u32)func<<8)|(((u32)bitsrange(reg,2,7))<<2)|
 		((u32)0x80000000)));
 	return (in32(0xcfc)>>(((u16)reg&3)<<3));
 }
