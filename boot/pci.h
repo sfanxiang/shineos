@@ -6,7 +6,7 @@
 #include "defines.h"
 #include "io.h"
 
-struct pci_std{
+struct pci_config_std{
 	u16 vendor_id;
 	u16 device_id;
 	u16 command;
@@ -32,12 +32,32 @@ struct pci_std{
 	u8 max_latency;
 }__attribute__ ((aligned(1)));
 
-u32 readpciconfig(u8 bus,u8 slot,u8 func,u8 reg)
+enum pci_class{
+	PCI_NONE=0,
+	PCI_MASS_STORAGE=1,
+	//todo
+};
+
+enum pci_subclass_mass_storage{
+	PCI_SUB_SATA=6,
+	//todo
+};
+
+struct pci_device{
+	u8 bus,slot,func;
+};
+
+u32 readpciconfig(struct pci_device *spec,u8 reg)
 {
-	out32(0xcf8,(((u32)bus<<16)|((u32)slot<<11)|
-		((u32)func<<8)|(((u32)bitsrange(reg,2,7))<<2)|
+	out32(0xcf8,(((u32)(spec->bus)<<16)|((u32)(spec->slot)<<11)|
+		((u32)(spec->func)<<8)|(((u32)bitsrange(reg,2,7))<<2)|
 		((u32)0x80000000)));
 	return (in32(0xcfc)>>(((u16)reg&3)<<3));
+}
+
+u8 checkpcidevice(struct pci_device *spec)
+{
+	return ((to16bit(readpciconfig(spec,offsetof(struct pci_config_std,vendor_id)))==0xffff)?0:1);
 }
 
 #endif
