@@ -66,45 +66,30 @@ protected:
 	mov ss,ax
 	mov esp,real
 
-	mov eax,0x81000|3
-	xor edx,edx
-	mov edi,0x80000
-	mov ecx,0x1000/8
-@@
-	mov [edi],eax
-	mov [edi+4],edx
-	add edi,8
-	loop @b
+	mov dword [0x80000],0x81000|3
+	mov dword [0x80000+4],0
 	
 	mov eax,0x82000|3
 	xor edx,edx
 	mov edi,0x81000
-	mov ecx,0x1000/8
+	mov ecx,16
 @@
 	mov [edi],eax
 	mov [edi+4],edx
+	add eax,0x1000
 	add edi,8
 	loop @b
 	
-	mov eax,0x83000|3
+	mov eax,0x83
 	xor edx,edx
 	mov edi,0x82000
-	mov ecx,0x1000/8
+	mov ecx,512*16
 @@
 	mov [edi],eax
 	mov [edi+4],edx
+	add eax,1<<21
+	adc edx,0
 	add edi,8
-	loop @b
-	
-	mov eax,3
-	xor edx,edx
-	mov edi,0x83000
-	mov ecx,0x200000/0x1000
-@@
-	mov [edi],eax
-	mov [edi+4],edx
-	add edi,8
-	add eax,0x1000
 	loop @b
 	
 	mov eax,0x80000
