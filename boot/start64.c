@@ -7,44 +7,24 @@ __asm__(
 
 #include "defines.h"
 #include "display.h"
-#include "pci.h"
+#include "ahci.h"
 
 void main()
 {
 	puts("Starting ShineOS...\n");
 	
-	struct pci_device dev;
-	u16 bus,vendor;	//u8 can't reach 256	
-	char buf[20];
-	for(bus=0;bus<256;bus++)
-		for(dev.slot=0;dev.slot<32;dev.slot++)
-		{
-			dev.bus=bus;
-			dev.func=0;
-			vendor=readpciconfig(&dev,
-				offsetof(struct pci_config_std,vendor_id));
-			if(vendor==0xffff)continue;
-			
-			puts("bus=0x");
-			puts(itoa(bus,buf,16));
-			puts(", slot=0x");
-			puts(itoa(dev.slot,buf,16));
-			puts(", vendor=0x");
-			puts(itoa(vendor,buf,16));
-			puts(", class=0x");
-			puts(itoa(to8bit(readpciconfig(&dev,
-				offsetof(struct pci_config_std,class))),
-				buf,16));
-			puts(", subclass=0x");
-			puts(itoa(to8bit(readpciconfig(&dev,
-				offsetof(struct pci_config_std,subclass))),
-				buf,16));
-			if(testbit(readpciconfig(&dev,
-				offsetof(struct pci_config_std,header_type)),
-				7))
-				puts(", multifunction");
-			putchar('\n');
-		}
+	struct pci_device ahci;
+	if(findahci(&ahci))
+	{
+		char buf[20];
+		puts("Found AHCI controller at:\nBus: 0x");
+		puts(itoa(ahci.bus,buf,16));
+		puts("\nSlot: 0x");
+		puts(itoa(ahci.slot,buf,16));
+		putchar('\n');
+	}
+	else
+		puts("AHCI controller not found.\n");
 	
 	for(;;);
 }

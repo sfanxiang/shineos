@@ -6,6 +6,9 @@
 #include "defines.h"
 #include "io.h"
 
+#define PCI_BUS_MAX 256
+#define PCI_SLOT_MAX 32
+
 struct pci_config_std{
 	u16 vendor_id;
 	u16 device_id;
