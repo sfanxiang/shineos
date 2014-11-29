@@ -8,9 +8,9 @@ export CC64 = x86_64-unknown-linux-gnu-gcc -c -fPIC -O2
 export LD64 = x86_64-unknown-linux-gnu-ld -nostdlib --oformat binary
 export CPPCUR = g++ -O2
 
-all:init _boot _config _tools _images
+all:clean _boot _config _tools _images
 
-init:
+clean:
 	mkdir -p $(OUTPUT)/boot
 	mkdir -p $(OUTPUT)/fs
 	mkdir -p $(OUTPUT)/tools

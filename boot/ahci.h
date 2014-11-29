@@ -7,12 +7,155 @@
 #include "defines.h"
 #include "pci.h"
 
+enum fis_type{
+	FIS_TYPE_REG_H2D=0x27,
+	FIS_TYPE_REG_D2H=0x34,
+	FIS_TYPE_DMA_ACT=0x39,
+	FIS_TYPE_DMA_SETUP=0x41,
+	FIS_TYPE_DATA=0x46,
+	FIS_TYPE_BIST=0x58,
+	FIS_TYPE_PIO_SETUP=0x5f,
+	FIS_TYPE_DEV_BITS=0xa1,
+};
+
 #pragma pack(push)
 #pragma pack(1)
 
+struct fis_reg_d2h{
+	u8 type;
+	
+	u8 pmport:4;
+	u8 reserved0:2;
+	u8 i:1;
+	u8 reserved1:1;
+	
+	u8 status;
+	u8 error;
+	
+	u32 lba0:24;
+	u8 device;
+	
+	u32 lba1:24;
+	u8 reserved2;
+	
+	u16 count;
+	u8 reserved3[6];
+};
+
+struct fis_pio_setup{
+	u8 type;
+	
+	u8 pmport:4;
+	u8 reserved0:1;
+	u8 data:1;
+	u8 i:1;
+	u8 reserved1:1;
+	
+	u8 status;
+	u8 error;
+	
+	u32 lba0:24;
+	u8 device;
+
+	u32 lba1:24;
+	u8 reserved2;
+	
+	u16 count;
+	u8 reserved3;
+	u8 e_status;
+	
+	u16 trans_count;
+	u8 reserved4[2];
+};
+
+struct fis_dma_setup{
+	u8 type;
+	
+	u8 pmport:4;
+	u8 reserved0:1;
+	u8 data:1;
+	u8 i:1;
+	u8 auto_act:1;
+	
+	u8 reserved1[2];
+	
+	u64 dma_buffer_id;
+	u32 reserved2;
+	u32 dma_buffer_offset;
+	u32 trans_count;
+	u32 reserved3;
+};
+
+struct fis_dev_bits{
+	u8 type;
+	
+	u8 receive:5;
+	u8 reserved0:1;
+	u8 i:1;
+	u8 reserved1:1;
+	
+	u8 statusl:3;
+	u8 reserved2:1;
+	u8 statush:3;
+	u8 reserved3:1;
+	
+	u8 error;
+	u32 s_active;
+};
+
+struct hba_fis{
+	struct fis_dma_setup dma_setup;
+	u8 pad0[4];
+	struct fis_pio_setup pio_setup;
+	u8 pad1[12];
+	struct fis_reg_d2h reg;
+	u8 pad2[4];
+	struct fis_dev_bits dev_bits;
+	u8 u[64];
+	u8 reserved[0x100-0xa0];
+};
+
+struct hba_prdt_entry{
+	void* data_base;
+	u32 reserved0;
+	
+	u32 data_byte_cnt:22;
+	u32 reserved1:9;
+	u32 i:1;
+};
+
+struct hba_cmd_table{
+	u8 cmd_fis[64];
+	u8 atapi_cmd[16];
+	u8 reserved[48];
+	struct hba_prdt_entry prdt_entry[];
+};
+
+struct hba_cmd_header{
+	u8 cmd_fis_len:5;
+	u8 atapi:1;
+	u8 write:1;
+	u8 prefetch:1;
+	
+	u8 reset:1;
+	u8 bist:1;
+	u8 clear:1;
+	u8 reserved0:1;
+	u8 pmp:4;
+	
+	u16 prdt_len;
+	volatile u32 prdb_cnt;
+	
+	void* cmd_table_base;
+	
+	u32 reserved1[4];
+};
+
+typedef struct hba_cmd_header hba_cmd_list[32];
+
 struct hba_port{
-	void* cmd_list_base;
-	void* fis_base;
+	hba_cmd_list* cmd_list;
+	struct hba_fis* fis;
 	u32 int_status;
 	u32 int_enable;
 	u32 cmd;
@@ -60,6 +203,11 @@ enum ahci_dev{
 #define HBA_PORT_DET_PRESENT 3
 #define HBA_PORT_IPM_ACTIVE 1
 
+#define HBA_PORT_CMD_ST 1
+#define HBA_PORT_CMD_FRE (1<<4)
+#define HBA_PORT_CMD_FR (1<<14)
+#define HBA_PORT_CMD_CR (1<<15)
+
 volatile struct hba_mem* getabar()
 {
 	struct pci_device dev;
@@ -90,7 +238,7 @@ u32 getahcidevtype(volatile struct hba_port *port)
 	return port->sign;
 }
 
-u8 findahciport(volatile struct hba_mem *abar,u8 begin,u32 type)
+s8 findahciport(volatile struct hba_mem *abar,u8 begin,u32 type)
 {
 	u32 port=abar->port;
 	port>>=begin;
@@ -101,8 +249,37 @@ u8 findahciport(volatile struct hba_mem *abar,u8 begin,u32 type)
 			return i;
 		port>>=1;
 	}
-	return 0xff;
+	return -1;
 }
+
+s8 findahcicmdslot(volatile struct hba_port *port)
+{
+	u32 slots=port->sactive|port->cmd_issue;
+	u8 i;
+	for(i=0;i<32;i++)
+	{
+		if(!(slots&1))
+			return i;
+		slots>>=1;
+	}
+	return -1;
+}
+
+/*
+void start_ahci_cmd(volatile struct hba_port *port)
+{
+	while(port->cmd&HBA_PORT_CMD_CR);
+	port->cmd|=HBA_PORT_CMD_FRE;
+	port->cmd|=HBA_PORT_CMD_ST;
+}
+
+void stop_ahci_cmd(volatile struct hba_port *port)
+{
+	port->cmd&=~HBA_PORT_CMD_ST;
+	while((port->cmd&HBA_PORT_CMD_FR)||(port->cmd&HBA_PORT_CMD_CR);
+	port->cmd&=~HBA_PORT_CMD_FRE;
+}
+*/
 
 #endif
 

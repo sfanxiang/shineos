@@ -106,7 +106,7 @@ init_di dw 0
 	func_readdrive
 
 times 216-($-label_code1) db 0
-sign dd 0
+sign dd 0x12345678	;todo
 copy_protect dw 0	;0x5a5a if protected
 
 ;partition table

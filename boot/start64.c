@@ -15,15 +15,17 @@ void main()
 		for(;;);
 	}
 	
-	char buf[20];u8 port=0;
-	while((port=findahciport(abar,port,AHCI_DEV_SATA))!=0xff)
+	char buf[20];s8 port=0;
+	while((port=findahciport(abar,port,AHCI_DEV_SATA))!=-1)
 	{
 		puts("Port: ");
 		puts(itoa(port,buf,10));
 		puts("\nCommand list base: 0x");
-		puts(itoa((size_t)(abar->ports[port].cmd_list_base),buf,16));
+		puts(itoa((size_t)(abar->ports[port].cmd_list),buf,16));
 		puts("\nFIS base: 0x");
-		puts(itoa((size_t)(abar->ports[port].fis_base),buf,16));
+		puts(itoa((size_t)(abar->ports[port].fis),buf,16));
+		puts("\nFirst free command list slot: ");
+		puts(itoa(findahcicmdslot(&(abar->ports[port])),buf,10));
 		putchar('\n');
 		port++;
 	}
