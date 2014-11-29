@@ -7,12 +7,12 @@
 
 extern void* memcpy(void *destination,const void *source,size_t num);
 
-char* itoa(u32 value,char *str,u32 base)
+char* itoa(u64 value,char *str,u8 base)
 {
 	char *strbackup=str;
 	do
 	{
-		u32 cur=value%base;
+		u8 cur=value%base;
 		if(cur<10)
 			*str=cur+'0';
 		else

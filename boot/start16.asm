@@ -8,13 +8,15 @@ org 0x7c00
 %define SEL_DATA64 (gdt_data64-gdt)
 
 bits 16
-	cli
+start:
 	jmp 0:real
+
 real:
+	cli
 	mov ax,cs
 	mov ds,ax
 	mov ss,ax
-	mov sp,real
+	mov sp,start
 	
 	mov ax,3
 	int 0x10
@@ -64,7 +66,7 @@ protected:
 	mov ax,SEL_DATA32
 	mov ds,ax
 	mov ss,ax
-	mov esp,real
+	mov esp,start
 
 	mov dword [0x80000],0x81000|3
 	mov dword [0x80000+4],0
@@ -118,3 +120,5 @@ long_start:
 	mov fs,ax
 	mov gs,ax
 	mov ss,ax
+	xor rsp,rsp
+	mov rsp,0x70000

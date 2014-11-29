@@ -1,9 +1,4 @@
 #define __AS386_64__
-__asm__(
-	".global _start\n"
-	"_start:\n"
-	"movq $0x70000,%rsp\n"
-	"jmp main");
 
 #include "defines.h"
 #include "display.h"
@@ -13,18 +8,25 @@ void main()
 {
 	puts("Starting ShineOS...\n");
 	
-	struct pci_device ahci;
-	if(findahci(&ahci))
-	{
-		char buf[20];
-		puts("Found AHCI controller at:\nBus: 0x");
-		puts(itoa(ahci.bus,buf,16));
-		puts("\nSlot: 0x");
-		puts(itoa(ahci.slot,buf,16));
-		putchar('\n');
+	puts("Searching for available AHCI port...\n");
+	volatile struct hba_mem *abar=getabar();
+	if(!abar){
+		puts("Cannot find ABAR.\n");
+		for(;;);
 	}
-	else
-		puts("AHCI controller not found.\n");
+	
+	char buf[20];u8 port=0;
+	while((port=findahciport(abar,port,AHCI_DEV_SATA))!=0xff)
+	{
+		puts("Port: ");
+		puts(itoa(port,buf,10));
+		puts("\nCommand list base: 0x");
+		puts(itoa((size_t)(abar->ports[port].cmd_list_base),buf,16));
+		puts("\nFIS base: 0x");
+		puts(itoa((size_t)(abar->ports[port].fis_base),buf,16));
+		putchar('\n');
+		port++;
+	}
 	
 	for(;;);
 }

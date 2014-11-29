@@ -16,6 +16,7 @@ typedef __s32 s32;
 #ifdef __AS386_64__
 
 typedef unsigned char u8;
+typedef char s8;
 typedef unsigned short u16;
 typedef short s16;
 typedef unsigned int u32;
@@ -25,16 +26,10 @@ typedef long s64;
 
 typedef u64 size_t;
 
+#define NULL ((void*)0)
+
 #endif
 
 #define offsetof(st,m) ((size_t)(&((st *)0)->m))
-
-#define bitsrange(val,h,r) ((val<<(sizeof(val)*8-r-1))>>(sizeof(val)*8-r-1+h))
-
-#define to8bit(n) (bitsrange(n,0,7))
-#define to16bit(n) (bitsrange(n,0,15))
-#define to32bit(n) (bitsrange(n,0,31))
-#define to64bit(n) (bitsrange(n,0,63))
-#define testbit(n,b) (bitsrange(n,b,b))
 
 #endif

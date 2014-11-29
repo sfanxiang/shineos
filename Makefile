@@ -2,11 +2,11 @@ export OUTPUT = $(abspath output)
 
 export ASM = nasm
 export CC16 = bcc -ansi -c -O
-export CC64 = x86_64-tcc -nostdlib -Wl,--oformat=binary 
-export CC64_STRIP = dd iflag=skip_bytes skip=96 
-export CPPCUR = g++ -O2 
-export LD16_1 = ld86 -d 
+export LD16_1 = ld86 -d
 export LD16_2 = -L/usr/lib/bcc/ -lc
+export CC64 = x86_64-unknown-linux-gnu-gcc -c -fPIC -O2
+export LD64 = x86_64-unknown-linux-gnu-ld -nostdlib --oformat binary
+export CPPCUR = g++ -O2
 
 all:init _boot _config _tools _images
 

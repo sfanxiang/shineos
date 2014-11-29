@@ -9,6 +9,8 @@
 #define PCI_BUS_MAX 256
 #define PCI_SLOT_MAX 32
 
+#pragma pack(push)
+#pragma pack(1)
 struct pci_config_std{
 	u16 vendor_id;
 	u16 device_id;
@@ -22,7 +24,7 @@ struct pci_config_std{
 	u8 latency;
 	u8 header_type;
 	u8 bist;
-	u32 bar[5];
+	u32 bar[6];
 	u32 cardbus_ptr;
 	u16 subsys_id;
 	u16 subsys_vendor_id;
@@ -33,7 +35,8 @@ struct pci_config_std{
 	u8 int_pin;
 	u8 min_grant;
 	u8 max_latency;
-}__attribute__ ((aligned(1)));
+};
+#pragma pack(pop)
 
 enum pci_class{
 	PCI_NONE=0,
@@ -53,14 +56,14 @@ struct pci_device{
 u32 readpciconfig(struct pci_device *spec,u8 reg)
 {
 	out32(0xcf8,(((u32)(spec->bus)<<16)|((u32)(spec->slot)<<11)|
-		((u32)(spec->func)<<8)|(((u32)bitsrange(reg,2,7))<<2)|
+		((u32)(spec->func)<<8)|((u32)(reg&0xfc))|
 		((u32)0x80000000)));
 	return (in32(0xcfc)>>(((u16)reg&3)<<3));
 }
 
 u8 checkpcidevice(struct pci_device *spec)
 {
-	return ((to16bit(readpciconfig(spec,offsetof(struct pci_config_std,vendor_id)))==0xffff)?0:1);
+	return ((readpciconfig(spec,offsetof(struct pci_config_std,vendor_id))==0xffff)?0:1);
 }
 
 #endif
