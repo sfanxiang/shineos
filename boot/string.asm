@@ -1,6 +1,7 @@
-bits 64
+.intel_syntax noprefix
+.code64
 
-global memcpy
+.globl memcpy
 memcpy:
 	push rcx
 	mov rcx,rdx

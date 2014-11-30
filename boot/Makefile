@@ -1,7 +1,7 @@
 all:$(OUTPUT)/boot/sldr.bin $(OUTPUT)/fs/sys/start
 
 $(OUTPUT)/boot/sldr0.bin:sldr0.asm display.inc drive.inc std.inc
-	$(ASM) -o $@ $<
+	$(AS16) -o $@ $<
 
 $(OUTPUT)/boot/sldr1.bin:sldr1.c defines.h display.h drive.h fs.h keyboard.h memory.h time.h
 	$(CC16) -o $(OUTPUT)/boot/sldr1.o $<
@@ -18,7 +18,7 @@ $(OUTPUT)/fs/sys/start:$(OUTPUT)/fs/sys/start16 $(OUTPUT)/fs/sys/start64
 
 $(OUTPUT)/fs/sys/start16:start16.asm
 	mkdir -p $(OUTPUT)/fs/sys
-	$(ASM) -o $@ $<
+	$(AS16) -o $@ $<
 
 $(OUTPUT)/fs/sys/start64:$(OUTPUT)/fs/sys/start64.o $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o $(OUTPUT)/fs/sys/io.o	
 	$(LD64) -o $@ $(OUTPUT)/fs/sys/start64.o $(OUTPUT)/fs/sys/display.o $(OUTPUT)/fs/sys/string.o $(OUTPUT)/fs/sys/io.o
@@ -31,10 +31,10 @@ $(OUTPUT)/fs/sys/start64.o:start64.c
 	$(CC64) -o $@ $<
 
 $(OUTPUT)/fs/sys/display.o:display.asm
-	$(ASM) -f elf64 -o $@ $<
+	$(AS64) -o $@ $<
 
 $(OUTPUT)/fs/sys/string.o:string.asm
-	$(ASM) -f elf64 -o $@ $<
+	$(AS64) -o $@ $<
 
 $(OUTPUT)/fs/sys/io.o:io.asm
-	$(ASM) -f elf64 -o $@ $<
+	$(AS64) -o $@ $<

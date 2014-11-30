@@ -1,9 +1,10 @@
 export OUTPUT = $(abspath output)
 
-export ASM = nasm
+export AS16 = nasm
 export CC16 = bcc -ansi -c -O
 export LD16_1 = ld86 -d
 export LD16_2 = -L/usr/lib/bcc/ -lc
+export AS64 = x86_64-unknown-linux-gnu-as
 export CC64 = x86_64-unknown-linux-gnu-gcc -c -fPIC -O2
 export LD64 = x86_64-unknown-linux-gnu-ld -nostdlib --oformat binary
 export CPPCUR = g++ -O2

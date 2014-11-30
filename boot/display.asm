@@ -1,6 +1,7 @@
-bits 64
+.intel_syntax noprefix
+.code64
 
-global getcursorpos
+.globl getcursorpos
 getcursorpos:
 	push dx
 	
@@ -20,7 +21,7 @@ getcursorpos:
 	pop dx
 	ret
 
-global setcursorpos
+.globl setcursorpos
 setcursorpos:
 	push cx
 	push dx
@@ -44,7 +45,7 @@ setcursorpos:
 	pop cx
 	ret
 
-global writechar
+.globl writechar
 writechar:
 	mov ax,di
 	movzx rsi,si

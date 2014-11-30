@@ -1,6 +1,7 @@
-bits 64
+.intel_syntax noprefix
+.code64
 
-global in32
+.globl in32
 in32:
 	push dx
 	mov dx,di
@@ -8,7 +9,7 @@ in32:
 	pop dx
 	ret
 
-global out32
+.globl out32
 out32:
 	push dx
 	mov dx,di
