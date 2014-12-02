@@ -20,6 +20,7 @@ void main()
 	{
 		puts("Port: ");
 		puts(itoa(port,buf,10));
+		ahciportrebase(&(abar->ports[port]),port);
 		puts("\nCommand list base: 0x");
 		puts(itoa((size_t)(abar->ports[port].cmd_list),buf,16));
 		puts("\nFIS base: 0x");

@@ -167,7 +167,7 @@ struct hba_cmd_header{
 	u8 pmp:4;
 	
 	u16 prdt_len;
-	volatile u32 prdb_cnt;
+	volatile u32 prd_byte;
 	
 	struct hba_cmd_table* cmd_table;
 	
@@ -306,7 +306,7 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	cmdheader->cmd_fis_len=sizeof(struct fis_reg_h2d)/sizeof(u32);
 	cmdheader->write=0;
 	cmdheader->prdt_len=((count-1)>>4)+1;
-
+	
 	volatile struct hba_cmd_table *cmdtable=cmdheader->cmd_table;
 	memset(cmdtable,0,sizeof(*cmdtable)+sizeof(struct hba_prdt_entry)*(cmdheader->prdt_len));
 
@@ -341,11 +341,11 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	if(spin==2147483647)
 		return 0;
 
-	port->cmd_issue=1<<slot;
+	port->cmd_issue=1UL<<slot;
 
 	while(1)
 	{
-		if((port->cmd_issue&(1<<slot))==0)
+		if((port->cmd_issue&(1UL<<slot))==0)
 			break;
 		if(port->int_status&HBA_PORT_IS_TFES)
 			return 0;
@@ -357,7 +357,6 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	return 1;
 }
 
-/*
 void start_ahci_cmd(volatile struct hba_port *port)
 {
 	while(port->cmd&HBA_PORT_CMD_CR);
@@ -368,10 +367,34 @@ void start_ahci_cmd(volatile struct hba_port *port)
 void stop_ahci_cmd(volatile struct hba_port *port)
 {
 	port->cmd&=~HBA_PORT_CMD_ST;
-	while((port->cmd&HBA_PORT_CMD_FR)||(port->cmd&HBA_PORT_CMD_CR);
 	port->cmd&=~HBA_PORT_CMD_FRE;
+	while((port->cmd&HBA_PORT_CMD_FR)||(port->cmd&HBA_PORT_CMD_CR));
 }
-*/
+
+#define	AHCI_BASE 0x400000  //todo
+
+void ahciportrebase(volatile struct hba_port *port,u8 portno)
+{
+	stop_ahci_cmd(port);
+
+	port->cmd_list=AHCI_BASE+(((size_t)portno)<<10);
+	memset(port->cmd_list,0,1024);
+
+	port->fis=AHCI_BASE+(32<<10)+(((size_t)portno)<<8);
+	memset(port->fis,0,256);
+
+	volatile struct hba_cmd_header *cmdheader=port->cmd_list;
+	u8 i;
+	for(i=0;i<32;i++)
+	{
+		cmdheader[i].prdt_len=8;
+		cmdheader[i].cmd_table=AHCI_BASE+(40<<10)
+			+(((size_t)portno)<<13)+(((size_t)i)<<8);
+		memset(cmdheader[i].cmd_table,0,256);
+	}
+
+	start_ahci_cmd(port);
+}
 
 #endif
 
