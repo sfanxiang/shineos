@@ -18,6 +18,9 @@ real:
 	mov ss,ax
 	mov sp,start
 	
+	mov ah,0
+	int 0x13
+
 	mov ax,3
 	int 0x10
 	

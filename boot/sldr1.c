@@ -44,7 +44,7 @@ void loadimg(char *fullpath)
 		blocksize,data,NULL,&bytesread))
 		error("Failed reading image file.",1);
 	for(i=0;i<bytesread;i++)
-		setfarbyte((pfar)(i+0x7c00),data[i]);
+		setfarbyte(((pfar)0x7c00000+i),data[i]);
 	
 	asm("\
 		cli\n\

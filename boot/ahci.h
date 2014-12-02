@@ -310,8 +310,8 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	volatile struct hba_cmd_table *cmdtable=cmdheader->cmd_table;
 	memset(cmdtable,0,sizeof(*cmdtable)+sizeof(struct hba_prdt_entry)*(cmdheader->prdt_len));
 
-	u16 i;
-	for(i=0;i<cmdheader->prdt_len-1;i++)
+	u16 i=0;
+	for(;i<cmdheader->prdt_len-1;i++)
 	{
 		cmdtable->prdt_entry[i].data=buf;
 		cmdtable->prdt_entry[i].data_byte_cnt=8192;
@@ -321,7 +321,7 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	}
 	cmdtable->prdt_entry[i].data=buf;
 	cmdtable->prdt_entry[i].data_byte_cnt=count<<9;
-	cmdtable->prdt_entry[i].i=1;
+	cmdtable->prdt_entry[i].i=0;
 
 	volatile struct fis_reg_h2d *cmdfis=(volatile struct fis_reg_h2d*)&(cmdtable->cmd_fis);
 	cmdfis->type=FIS_TYPE_REG_H2D;
@@ -342,7 +342,7 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 		return 0;
 
 	port->cmd_issue=1UL<<slot;
-
+	
 	while(1)
 	{
 		if((port->cmd_issue&(1UL<<slot))==0)
@@ -377,10 +377,10 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 {
 	stop_ahci_cmd(port);
 
-	port->cmd_list=AHCI_BASE+(((size_t)portno)<<10);
+	port->cmd_list=(struct hba_cmd_header*)(AHCI_BASE+(((size_t)portno)<<10));
 	memset(port->cmd_list,0,1024);
 
-	port->fis=AHCI_BASE+(32<<10)+(((size_t)portno)<<8);
+	port->fis=(struct hba_fis*)(AHCI_BASE+(32<<10)+(((size_t)portno)<<8));
 	memset(port->fis,0,256);
 
 	volatile struct hba_cmd_header *cmdheader=port->cmd_list;
@@ -388,8 +388,8 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 	for(i=0;i<32;i++)
 	{
 		cmdheader[i].prdt_len=8;
-		cmdheader[i].cmd_table=AHCI_BASE+(40<<10)
-			+(((size_t)portno)<<13)+(((size_t)i)<<8);
+		cmdheader[i].cmd_table=(struct hba_cmd_table*)(AHCI_BASE+(40<<10)
+			+(((size_t)portno)<<13)+(((size_t)i)<<8));
 		memset(cmdheader[i].cmd_table,0,256);
 	}
 
