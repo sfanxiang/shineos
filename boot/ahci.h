@@ -21,6 +21,29 @@ enum fis_type{
 #pragma pack(push)
 #pragma pack(1)
 
+struct fis_reg_h2d{
+	u8 type;
+
+	u8 pmport:4;
+	u8 reserved0:3;
+	u8 cmd:1;
+
+	u8 command;
+	u8 featurel;
+
+	u32 lba0:24;
+	u8 device;
+
+	u32 lba1:24;
+	u8 featureh;
+
+	u16 count;
+	u8 icc;
+	u8 control;
+
+	u8 reserved1[4];
+};
+
 struct fis_reg_d2h{
 	u8 type;
 	
@@ -116,7 +139,7 @@ struct hba_fis{
 };
 
 struct hba_prdt_entry{
-	void* data_base;
+	void* data;
 	u32 reserved0;
 	
 	u32 data_byte_cnt:22;
@@ -146,15 +169,13 @@ struct hba_cmd_header{
 	u16 prdt_len;
 	volatile u32 prdb_cnt;
 	
-	void* cmd_table_base;
+	struct hba_cmd_table* cmd_table;
 	
 	u32 reserved1[4];
 };
 
-typedef struct hba_cmd_header hba_cmd_list[32];
-
 struct hba_port{
-	hba_cmd_list* cmd_list;
+	struct hba_cmd_header* cmd_list;
 	struct hba_fis* fis;
 	u32 int_status;
 	u32 int_enable;
@@ -200,6 +221,12 @@ enum ahci_dev{
 	AHCI_DEV_PM=0x96690101,
 };
 
+#define ATA_CMD_READ_DMA_EX 0x25
+#define ATA_CMD_WRITE_DMA_EX 0x35
+
+#define ATA_DEV_BUSY 0x80
+#define ATA_DEV_DRQ 0x08
+
 #define HBA_PORT_DET_PRESENT 3
 #define HBA_PORT_IPM_ACTIVE 1
 
@@ -207,6 +234,8 @@ enum ahci_dev{
 #define HBA_PORT_CMD_FRE (1<<4)
 #define HBA_PORT_CMD_FR (1<<14)
 #define HBA_PORT_CMD_CR (1<<15)
+
+#define HBA_PORT_IS_TFES (1<<30)
 
 volatile struct hba_mem* getabar()
 {
@@ -263,6 +292,69 @@ s8 findahcicmdslot(volatile struct hba_port *port)
 		slots>>=1;
 	}
 	return -1;
+}
+
+u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
+{
+	port->int_status=0xffffffffU;
+	s8 slot=findahcicmdslot(port);
+	if(slot==-1)
+		return 0;
+
+	volatile struct hba_cmd_header *cmdheader=port->cmd_list;
+	cmdheader+=slot;
+	cmdheader->cmd_fis_len=sizeof(struct fis_reg_h2d)/sizeof(u32);
+	cmdheader->write=0;
+	cmdheader->prdt_len=((count-1)>>4)+1;
+
+	volatile struct hba_cmd_table *cmdtable=cmdheader->cmd_table;
+	memset(cmdtable,0,sizeof(*cmdtable)+sizeof(struct hba_prdt_entry)*(cmdheader->prdt_len));
+
+	u16 i;
+	for(i=0;i<cmdheader->prdt_len-1;i++)
+	{
+		cmdtable->prdt_entry[i].data=buf;
+		cmdtable->prdt_entry[i].data_byte_cnt=8192;
+		cmdtable->prdt_entry[i].i=1;
+		buf+=8192;
+		count-=16;
+	}
+	cmdtable->prdt_entry[i].data=buf;
+	cmdtable->prdt_entry[i].data_byte_cnt=count<<9;
+	cmdtable->prdt_entry[i].i=1;
+
+	volatile struct fis_reg_h2d *cmdfis=(volatile struct fis_reg_h2d*)&(cmdtable->cmd_fis);
+	cmdfis->type=FIS_TYPE_REG_H2D;
+	cmdfis->cmd=1;
+	cmdfis->command=ATA_CMD_READ_DMA_EX;
+
+	cmdfis->lba0=start&0xffffff;
+	cmdfis->device=1<<6;	//LBA mode
+	cmdfis->lba1=start>>24;
+
+	cmdfis->count=count;
+
+	u32 spin=0;
+	while(spin<2147483647&&(port->task_file&(ATA_DEV_BUSY|ATA_DEV_DRQ)))
+		spin++;
+
+	if(spin==2147483647)
+		return 0;
+
+	port->cmd_issue=1<<slot;
+
+	while(1)
+	{
+		if((port->cmd_issue&(1<<slot))==0)
+			break;
+		if(port->int_status&HBA_PORT_IS_TFES)
+			return 0;
+	}
+
+	if(port->int_status&HBA_PORT_IS_TFES)
+		return 0;
+
+	return 1;
 }
 
 /*

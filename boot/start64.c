@@ -26,9 +26,20 @@ void main()
 		puts(itoa((size_t)(abar->ports[port].fis),buf,16));
 		puts("\nFirst free command list slot: ");
 		puts(itoa(findahcicmdslot(&(abar->ports[port])),buf,10));
+		puts("\nFirst bytes from drive: ");
+		u8 readbuf[512];
+		if(!readahcidrive(&(abar->ports[port]),0,1,readbuf))
+		{
+			puts("Failed!\n");
+			while(1);
+		}
+		puts("0x");
+		puts(itoa(readbuf[0],buf,16));
+		puts(" 0x");
+		puts(itoa(readbuf[1],buf,16));
 		putchar('\n');
 		port++;
 	}
 	
-	for(;;);
+	while(1);
 }
