@@ -10,3 +10,16 @@ memcpy:
 	rep movsb
 	pop rcx
 	ret
+
+.globl memset
+memset:
+	mov rax,rdi
+	push rax
+	push rcx
+	mov ax,si
+	mov rcx,rdx
+	cld
+	rep stosb
+	pop rcx
+	pop rax
+	ret

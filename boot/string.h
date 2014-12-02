@@ -6,6 +6,7 @@
 #ifdef __AS386_64__
 
 extern void* memcpy(void *destination,const void *source,size_t num);
+extern void* memset(void *ptr,u8 value,size_t num);
 
 char* itoa(u64 value,char *str,u8 base)
 {
