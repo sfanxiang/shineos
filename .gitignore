@@ -1,13 +1,5 @@
-*
-
-!boot/
-!config/
-!images/
-!tools/
-!.gdbinit
-!Makefile
-!qemu
-!qemu-vnc
-!README
-
+.*
 *~
+output/
+test/
+*.anjuta
