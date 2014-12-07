@@ -2,7 +2,7 @@
 #ifndef AHCI_H
 #define AHCI_H
 
-#ifdef __AS386_64__
+#ifdef __x86_64__
 
 #include "defines.h"
 #include "pci.h"
@@ -306,7 +306,7 @@ u8 readahcidrive(volatile struct hba_port *port,u64 start,u32 count,void *buf)
 	cmdheader->cmd_fis_len=sizeof(struct fis_reg_h2d)/sizeof(u32);
 	cmdheader->write=0;
 	cmdheader->prdt_len=((count-1)>>4)+1;
-	
+
 	volatile struct hba_cmd_table *cmdtable=cmdheader->cmd_table;
 	memset(cmdtable,0,sizeof(*cmdtable)+sizeof(struct hba_prdt_entry)*(cmdheader->prdt_len));
 
@@ -394,6 +394,29 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 	}
 
 	start_ahci_cmd(port);
+}
+
+static volatile struct hba_mem *__ahci_abar;
+static u8 __ahci_drives[128];
+
+s8 initdrive()
+{
+	__ahci_abar=getabar();
+	if(!__ahci_abar)return -1;
+
+	s8 port=0;u8 drivescnt=0;
+	while((port=findahciport(__ahci_abar,port,AHCI_DEV_SATA))!=-1)
+	{
+		ahciportrebase(&(__ahci_abar->ports[port]),port);
+		__ahci_drives[drivescnt++]=port;
+		port++;
+	}
+	return (s8)drivescnt;
+}
+
+u8 readdrive(u8 drive,u64 start,u32 count,void *buf)
+{
+	return readahcidrive(&(__ahci_abar->ports[__ahci_drives[drive]]),start,count,buf);
 }
 
 #endif

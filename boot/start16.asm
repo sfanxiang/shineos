@@ -11,6 +11,8 @@ bits 16
 start:
 	jmp 0:real
 
+sign dd 0x12345678
+
 real:
 	cli
 	mov ax,cs

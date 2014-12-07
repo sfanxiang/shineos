@@ -1,13 +1,41 @@
 #ifndef FS_H
 #define FS_H
 
+#ifdef __AS386_16__
+
 #include "drive.h"
 #include "memory.h"
 
 #include <string.h>
 
-#define FS_PART_ID 0x60
-#define FS_START_RESERVED 64
+#endif
+
+#ifdef __x86_64__
+
+#include "ahci.h"
+#include "string.h"
+
+#endif
+
+#ifdef __x86_64__
+#pragma pack(push,1)
+#endif
+
+struct partentry{
+	u8 status;	//0x00:inactive,0x80:active
+	u8 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
+	u32 firstlba,sectors;
+};
+
+struct mbr{
+	u8 code1[218];
+	u8 resv[6];
+	u8 code2[216];
+	u32 disksign;
+	u16 copy_protect;
+	struct partentry parttable[4];
+	u16 bootsign;
+};
 
 struct superdesc{
 	u16 magic;
@@ -45,6 +73,14 @@ struct fileblock{
 	u8 data[];
 };
 
+#ifdef __x86_64__
+#pragma pack(pop)
+#endif
+
+#define FS_PART_ID 0x60
+#define FS_START_RESERVED 64
+
+#ifdef __AS386_16__
 u8 readblock(u8 drive,u32 part,u32 block,u16 blocksize,void *dest)
 {
 	struct dap drivedata;
@@ -59,6 +95,14 @@ u8 readblock(u8 drive,u32 part,u32 block,u16 blocksize,void *dest)
 		return 0;
 	return 1;
 }
+#endif
+
+#ifdef __x86_64__
+u8 readblock(u8 drive,u32 part,u32 block,u16 blocksize,void *dest)
+{
+	return readdrive(drive,part+FS_START_RESERVED+block*blocksize,blocksize,dest);
+}
+#endif
 
 u8 searchindir(u8 drive,u32 part,u32 dir,u16 blocksize,char *filename,u32 *pfiledesc,u32 *pdesc)
 {

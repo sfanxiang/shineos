@@ -13,16 +13,16 @@ typedef __s32 s32;
 
 #endif
 
-#ifdef __AS386_64__
+#ifdef __x86_64__
 
 typedef unsigned char u8;
-typedef char s8;
+typedef signed char s8;
 typedef unsigned short u16;
-typedef short s16;
+typedef signed short s16;
 typedef unsigned int u32;
-typedef int s32;
+typedef signed int s32;
 typedef unsigned long u64;
-typedef long s64;
+typedef signed long s64;
 
 typedef u64 size_t;
 

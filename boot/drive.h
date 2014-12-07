@@ -1,6 +1,8 @@
 #ifndef DRIVE_H
 #define DRIVE_H
 
+#ifdef __AS386_16__
+
 #include "memory.h"
 
 struct dap{
@@ -10,13 +12,6 @@ struct dap{
 	u32 startsector;
 	u32 reserved;	//should be 0
 };
-struct partentry{
-	u8 status;	//0x00:inactive,0x80:active
-	u8 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
-	u32 firstlba,sectors;
-};
-
-#ifdef __AS386_16__
 
 u8 readdrivesectors(u8 drive,struct dap *data)
 {

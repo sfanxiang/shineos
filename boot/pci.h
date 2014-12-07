@@ -1,7 +1,7 @@
 #ifndef PCI_H
 #define PCI_H
 
-#ifdef __AS386_64__
+#ifdef __x86_64__
 
 #include "defines.h"
 #include "io.h"
