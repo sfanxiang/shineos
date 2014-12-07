@@ -31,6 +31,19 @@ char* itoa(u64 value,char *str,u8 base)
 	return strbackup;
 }
 
+s8 strcmp(const char *str1,const char *str2)
+{
+	while(*str1||*str2)
+	{
+		if(*str1<*str2)
+			return -1;
+		if(*str1>*str2)
+			return 1;
+		str1++;str2++;
+	}
+	return 0;
+}
+
 #endif
 
 #endif
