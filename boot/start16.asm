@@ -25,7 +25,53 @@ real:
 
 	mov ax,3
 	int 0x10
-	
+
+	xor di,di
+	mov es,di
+	mov di,0x500
+.getmemorymap:
+	xor ebx,ebx
+	xor bp,bp
+	mov edx,0x0534d4150
+	mov eax,0xe820
+	mov dword [es:di+20],1
+	mov ecx,24
+	int 0x15
+	jc .failed
+	cmp eax,0x0534d4150
+	jne .failed
+	test ebx,ebx
+	jz .failed
+	jmp .jmpin
+.loop:
+	mov edx,0x0534d4150
+	mov eax,0xe820
+	mov dword [es:di+20],1
+	mov ecx,24
+	int 0x15
+	jc short .finished
+.jmpin:
+	jcxz .skip
+	cmp cl,20
+	jbe .notext
+	test byte [es:di+20],1
+	je .skip
+.notext:
+	mov ecx,[es:di+8]
+	or ecx,[es:di+12]
+	jz .skip
+	inc bp
+	add di,24
+.skip:
+	test ebx,ebx
+	jnz .loop
+.finished:
+	mov [cs:0x1000],bp
+	jmp .return
+.failed:
+	mov word [cs:0x1000],-1
+.return:
+
 	lgdt [gdt_ptr]
 	
 	in al,0x92
