@@ -1,14 +1,13 @@
 CSRC=$(shell ls *.c)
 ASSRC=$(shell ls *.asm | grep -v crt0.asm)
-COBJ=$(patsubst %.c,$(OUTPUT)/fs/sys/%.o,$(CSRC))
-ASOBJ=$(patsubst %.asm,$(OUTPUT)/fs/sys/%.o,$(ASSRC))
+COBJ=$(patsubst %.c,$(OUTPUT)/kernel/%.o,$(CSRC))
+ASOBJ=$(patsubst %.asm,$(OUTPUT)/kernel/%.o,$(ASSRC))
 
-$(OUTPUT)/fs/sys/kernel:$(OUTPUT)/fs/sys/crt0.o $(ASOBJ) $(COBJ)
+$(OUTPUT)/kernel/kernel:$(OUTPUT)/kernel/crt0.o $(ASOBJ) $(COBJ)
 	$(LD64) -T link.ld -o $@ $^
-	rm $^
 
-$(OUTPUT)/fs/sys/%.o:%.asm
+$(OUTPUT)/kernel/%.o:%.asm
 	$(AS64) -o $@ $<
 
-$(OUTPUT)/fs/sys/%.o:%.c
+$(OUTPUT)/kernel/%.o:%.c
 	$(CC64) -o $@ $<
