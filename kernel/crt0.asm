@@ -6,4 +6,5 @@
 .globl _start
 _start:
 	mov rsp,0x70000
-	jmp main
+	call _init
+	jmp kmain

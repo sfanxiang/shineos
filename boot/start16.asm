@@ -172,5 +172,3 @@ long_start:
 	mov fs,ax
 	mov gs,ax
 	mov ss,ax
-	xor rsp,rsp
-	mov rsp,0x70000

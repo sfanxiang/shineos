@@ -9,9 +9,9 @@ export CC64 = x86_64-unknown-linux-gnu-gcc -c -ffreestanding -fno-stack-protecto
 export LD64 = x86_64-unknown-linux-gnu-gcc -nostdlib -Wl,--oformat=binary
 export CPPCUR = g++ -O2
 
-all:clean _boot _config _tools _images
+all:_clean _boot _config _kernel _tools _images
 
-clean:
+_clean:
 	mkdir -p $(OUTPUT)/boot
 	mkdir -p $(OUTPUT)/fs
 	mkdir -p $(OUTPUT)/tools
@@ -26,8 +26,14 @@ _boot:
 _config:
 	cd config && make
 
+_kernel:
+	cd kernel && make
+
 _tools:
 	cd tools && make
 
 _images:
 	cd images && make
+
+clean:
+	rm -f -r $(OUTPUT)
