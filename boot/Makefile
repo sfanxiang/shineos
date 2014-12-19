@@ -16,13 +16,13 @@ $(OUTPUT)/boot/start:$(OUTPUT)/boot/start16 $(OUTPUT)/boot/start64
 $(OUTPUT)/boot/start16:start16.asm
 	$(AS16) -o $@ $<
 
-$(OUTPUT)/boot/start64:$(OUTPUT)/boot/crt0.o $(OUTPUT)/boot/start64.o $(OUTPUT)/boot/display.o $(OUTPUT)/boot/string.o $(OUTPUT)/boot/io.o	
+$(OUTPUT)/boot/start64:link.ld $(OUTPUT)/boot/crt0.o $(OUTPUT)/boot/start64.o $(OUTPUT)/boot/display.o $(OUTPUT)/boot/string.o $(OUTPUT)/boot/io.o	
 	$(LD64) -T link.ld -o $@ $^
 
 $(OUTPUT)/boot/crt0.o:crt0.asm
 	$(AS64) -o $@ $<
 
-$(OUTPUT)/boot/start64.o:start64.c
+$(OUTPUT)/boot/start64.o:start64.c ahci.h defines.h display.h fs.h io.h memory.h pci.h string.h
 	$(CC64) -o $@ $<
 
 $(OUTPUT)/boot/display.o:display.asm

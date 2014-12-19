@@ -41,6 +41,9 @@ void main()
 	else
 		error("Failed detecting memory.",1);
 
+	matbuild();
+	//todo
+
 	s8 drivecnt;
 	if((drivecnt=initdrive())==-1)
 		error("Failed initializing drive.",1);
