@@ -42,7 +42,12 @@ void main()
 		error("Failed detecting memory.",1);
 
 	matbuild();
+	{
+		char buf[20];
+		puts(itoa(_malloc(0x100000),buf,16));
+	}
 	//todo
+	//todo: memory at 0x7c00 should be marked as used
 
 	s8 drivecnt;
 	if((drivecnt=initdrive())==-1)

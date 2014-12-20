@@ -277,7 +277,43 @@ u8 matbuild()
 	             +sizeof(struct mat_block)*(__memory_mat->maxcount)
 	             +sizeof(*__memory_mat),0,MAT_TYPE_USED);
 
+	matsplitblock(__memory_mat,0,1);
+	__memory_mat->block[0].type=MAT_TYPE_OTHER;
+
 	return 1;
+}
+
+s64 _malloc_check(size_t size,size_t align)
+{
+	if(size==0)return -1;
+	
+	u64 i;
+	for(i=0;i<__memory_mat->count-1;i++)
+	{
+		if(__memory_mat->block[i].type!=MAT_TYPE_FREE)continue;
+		void *startaddr=(void*)((((size_t)__memory_mat->block[i].addr-1)/align+1)*align);
+		if(startaddr<__memory_mat->block[i+1].addr
+		   &&__memory_mat->block[i+1].addr-startaddr>=size)
+			return i;
+	}
+
+	return -1;
+}
+
+void* _malloc_align(size_t size,size_t align)
+{
+	s64 block=_malloc_check(size,align);
+	if(block==-1)return -1;
+
+	void *addr=(void*)((((size_t)__memory_mat->block[block].addr-1)/align+1)*align);
+	if(matpickblock(__memory_mat,block,addr,addr+size,0,MAT_TYPE_USED)==-1)return NULL;
+
+	return addr;
+}
+
+void* _malloc(size_t size)
+{
+	return _malloc_align(size,1);
 }
 
 #endif
