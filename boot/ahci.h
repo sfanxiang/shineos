@@ -4,7 +4,7 @@
 
 #ifdef __x86_64__
 
-#include "defines.h"
+#include "memory.h"
 #include "pci.h"
 
 enum fis_type{
