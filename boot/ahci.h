@@ -371,16 +371,16 @@ void stop_ahci_cmd(volatile struct hba_port *port)
 	while((port->cmd&HBA_PORT_CMD_FR)||(port->cmd&HBA_PORT_CMD_CR));
 }
 
-#define	AHCI_BASE 0x400000  //todo
+static void *__ahci_base;
 
 void ahciportrebase(volatile struct hba_port *port,u8 portno)
 {
 	stop_ahci_cmd(port);
 
-	port->cmd_list=(struct hba_cmd_header*)(AHCI_BASE+(((size_t)portno)<<10));
+	port->cmd_list=(struct hba_cmd_header*)(__ahci_base+(((size_t)portno)<<10));
 	memset(port->cmd_list,0,1024);
 
-	port->fis=(struct hba_fis*)(AHCI_BASE+(32<<10)+(((size_t)portno)<<8));
+	port->fis=(struct hba_fis*)(__ahci_base+(32<<10)+(((size_t)portno)<<8));
 	memset(port->fis,0,256);
 
 	volatile struct hba_cmd_header *cmdheader=port->cmd_list;
@@ -388,7 +388,7 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 	for(i=0;i<32;i++)
 	{
 		cmdheader[i].prdt_len=8;
-		cmdheader[i].cmd_table=(struct hba_cmd_table*)(AHCI_BASE+(40<<10)
+		cmdheader[i].cmd_table=(struct hba_cmd_table*)(__ahci_base+(40<<10)
 			+(((size_t)portno)<<13)+(((size_t)i)<<8));
 		memset(cmdheader[i].cmd_table,0,256);
 	}
@@ -403,6 +403,9 @@ s8 initdrive()
 {
 	__ahci_abar=getabar();
 	if(!__ahci_abar)return -1;
+
+	__ahci_base=malloc_align(0x2500*32,1024);
+	if(__ahci_base==NULL)return -1;
 
 	s8 port=0;__ahci_drivescnt=0;
 	while((port=findahciport(__ahci_abar,port,AHCI_DEV_SATA))!=-1)
@@ -419,6 +422,8 @@ void stopdrive()
 	u8 i;
 	for(i=0;i<__ahci_drivescnt;i++)
 		stop_ahci_cmd(&(__ahci_abar->ports[__ahci_drives[i]]));
+	free(__ahci_base);
+	__ahci_base=NULL;
 }
 
 u8 readdrive(u8 drive,u64 start,u32 count,void *buf)

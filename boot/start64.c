@@ -43,7 +43,6 @@ void main()
 
 	if(!matbuild())
 		error("Failed building MAT.",1);
-	//todo
 	
 	s8 drivecnt;
 	if((drivecnt=initdrive())==-1)
@@ -70,9 +69,9 @@ void main()
 			struct mbr *diskmbr=(struct mbr*)diskbuf;
 			u32 part=diskmbr->parttable[diskpart].firstlba;
 			u16 blocksize;u32 pfile;
-			u32 bytesread;
+			u32 filesize;
 			if(!openfile(i,part,"/sys/kernel",&pfile,
-			             &blocksize,NULL))
+			             &blocksize,&filesize))
 			{
 				u8 buf[20];
 				puts("Error:\nCannot open \"/sys/kernel\" in drive #");
@@ -81,8 +80,12 @@ void main()
 				stopdrive();
 				continue;
 			}
-			if(!readfile(i,part,pfile,0x800000,blocksize,
-			             (void*)0x100000,NULL,&bytesread))
+			
+			void *kernel=malloc_align(filesize,1024);
+			if(!kernel)error("Cannot allocate memory for kernel.",1);
+			
+			if(!readfile(i,part,pfile,filesize,blocksize,
+			             kernel,NULL,NULL))
 			{
 				u8 buf[20];
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
@@ -92,7 +95,7 @@ void main()
 				continue;
 			}
 			stopdrive();
-			((void(*)())0x100000)();
+			((void(*)())kernel)();
 		}
 	}
 	
