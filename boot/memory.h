@@ -300,7 +300,7 @@ u8 matbuild()
 
 	__memory_mat->memsize=(SMAP_TABLE+SMAP_COUNT-1)->base+(SMAP_TABLE+SMAP_COUNT-1)->len;
 	__memory_mat->count=2;
-	__memory_mat->maxcount=10;  //todo
+	__memory_mat->maxcount=64;
 	__memory_mat->block[0].addr=0;
 	__memory_mat->block[0].len=0xec00;
 	__memory_mat->block[0].task=0;
