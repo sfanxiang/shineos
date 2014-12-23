@@ -205,16 +205,23 @@ void* malloc_align(size_t size,size_t align)
 	if(__memory_mat->count>=__memory_mat->maxcount)
 	{
 		struct mat *prevmat=__memory_mat;
+		u64 newcount=prevmat->count*3/2;
 		size_t newsize=sizeof(struct mat)
-		                  +sizeof(struct mat_block)*(prevmat->count+2);
+		                  +sizeof(struct mat_block)*newcount;
 		s64 newblock=malloc_find(newsize,8);
-		if(newblock==-1)return NULL;
+		if(newblock==-1)
+		{
+			newcount=prevmat->count+2;
+			newsize=sizeof(struct mat)+sizeof(struct mat_block)*newcount;
+			newblock=malloc_find(newsize,8);
+			if(newblock==-1)return NULL;
+		}
 
 		__memory_mat=(((size_t)prevmat->block[newblock-1].addr
 		                +prevmat->block[newblock-1].len-1)/8+1)*8;
 		memcpy(__memory_mat,prevmat,sizeof(struct mat)
 		       +sizeof(struct mat_block)*(prevmat->count));
-		__memory_mat->maxcount=prevmat->count+2;
+		__memory_mat->maxcount=newcount;
 		
 		struct mat_block blockdata;
 		blockdata.addr=__memory_mat;
@@ -253,6 +260,16 @@ void free(void* ptr)
 	if(block==-1)return;
 	if(__memory_mat->block[block].type!=MAT_TYPE_USED)return;
 	matremove(block);
+
+	u64 maxcount=__memory_mat->count*3/2;
+	if(__memory_mat->maxcount>maxcount)
+	{
+		s64 block=matfind(__memory_mat);
+		if(block==-1)return;
+		__memory_mat->block[block].len=sizeof(struct mat)
+			+sizeof(struct mat_block)*maxcount;
+		__memory_mat->maxcount=maxcount;
+	}
 }
 
 u8 matbuild()
