@@ -43,7 +43,7 @@ void main()
 
 	if(!matbuild())
 		error("Failed building MAT.",1);
-	
+
 	s8 drivecnt;
 	if((drivecnt=initdrive())==-1)
 		error("Failed initializing drive.",1);

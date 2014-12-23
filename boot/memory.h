@@ -133,52 +133,126 @@ struct mat{
 
 static struct mat *__memory_mat;
 
-s64 matfind(struct mat *mat,void *addr)
+s64 matfind(void *addr)
 {
-	if(!mat)return -1;
+	if(!__memory_mat)return -1;
 	u64 i;
-	for(i=0;i<mat->count;i++)
+	for(i=0;i<__memory_mat->count;i++)
 	{
-		if(mat->block[i].addr==addr)
+		if(__memory_mat->block[i].addr==addr)
 			return i;
-		if(mat->block[i].addr>addr)
+		if(__memory_mat->block[i].addr>addr)
 			return -1;
 	}
 	return -1;
 }
 
-s64 matinsert(struct mat *mat,u64 block,struct mat_block *data)
+void free(void* ptr);
+
+s64 matinsert(u64 block,struct mat_block *data)
 {
-	if(!mat)return -1;
+	if(!__memory_mat)return -1;
 	if(!data)return -1;
-	if(block>=mat->count||block==0)return -1;
-	if(mat->block[block-1].addr+mat->block[block-1].len
+	if(block>=__memory_mat->count||block==0)return -1;
+	if(__memory_mat->block[block-1].addr+__memory_mat->block[block-1].len
 	   >data->addr)return -1;
-	if(mat->block[block].addr<data->addr+data->len)return -1;
-	if(data->addr>=mat->memsize||data->len>mat->memsize)return -1;
+	if(__memory_mat->block[block].addr<data->addr+data->len)return -1;
+	if(data->addr>=__memory_mat->memsize||data->len>__memory_mat->memsize)return -1;
 	if(data->len==0)return -1;
 
 	u64 i;
-	for(i=mat->count-1;i>=block;i--)
-		memcpy(&(mat->block[i+1]),&(mat->block[i]),sizeof(struct mat_block));
+	for(i=__memory_mat->count-1;i>=block;i--)
+		memcpy(&(__memory_mat->block[i+1]),&(__memory_mat->block[i]),sizeof(struct mat_block));
 
-	memcpy(&(mat->block[block]),data,sizeof(struct mat_block));
-	mat->count++;
+	memcpy(&(__memory_mat->block[block]),data,sizeof(struct mat_block));
+	__memory_mat->count++;
 	
 	return block;
 }
 
-u8 matremove(struct mat *mat,u64 block)
+u8 matremove(u64 block)
 {
-	if(!mat)return 0;
-	if(block>=mat->count-1||block==0)return 0;
+	if(!__memory_mat)return 0;
+	if(block>=__memory_mat->count-1||block==0)return 0;
 
 	u64 i;
-	for(i=block+1;i<mat->count;i++)
-		memcpy(&(mat->block[i-1]),&(mat->block[i]),sizeof(struct mat_block));
+	for(i=block+1;i<__memory_mat->count;i++)
+		memcpy(&(__memory_mat->block[i-1]),&(__memory_mat->block[i]),sizeof(struct mat_block));
 
-	mat->count--;
+	__memory_mat->count--;
 	return 1;
+}
+
+s64 malloc_find(size_t size,size_t align)
+{
+	if(size==0)return -1;
+	if(align==0)return -1;
+
+	u64 i;
+	for(i=0;i<__memory_mat->count-1;i++)
+	{
+		void *start=__memory_mat->block[i].addr+__memory_mat->block[i].len;
+		start=(((size_t)start-1)/align+1)*align;
+		void *end=__memory_mat->block[i+1].addr;
+		if(start>=end)continue;
+		if(end-start<size)continue;
+		return i+1;
+	}
+}
+
+void* malloc_align(size_t size,size_t align)
+{
+	if(__memory_mat->count>=__memory_mat->maxcount)
+	{
+		struct mat *prevmat=__memory_mat;
+		size_t newsize=sizeof(struct mat)
+		                  +sizeof(struct mat_block)*(prevmat->count+2);
+		s64 newblock=malloc_find(newsize,8);
+		if(newblock==-1)return NULL;
+
+		__memory_mat=(((size_t)prevmat->block[newblock-1].addr
+		                +prevmat->block[newblock-1].len-1)/8+1)*8;
+		memcpy(__memory_mat,prevmat,sizeof(struct mat)
+		       +sizeof(struct mat_block)*(prevmat->count));
+		__memory_mat->maxcount=prevmat->count+2;
+		
+		struct mat_block blockdata;
+		blockdata.addr=__memory_mat;
+		blockdata.len=newsize;
+		blockdata.task=0;
+		blockdata.type=MAT_TYPE_USED;
+		if(matinsert(newblock,&blockdata)==-1)return NULL;
+		
+		free(prevmat);
+	}
+
+	s64 block=malloc_find(size,align);
+	if(block==-1)return NULL;
+	
+	void *start=__memory_mat->block[block-1].addr+__memory_mat->block[block-1].len;
+	start=(((size_t)start-1)/align+1)*align;
+
+	struct mat_block data;
+	data.addr=start;
+	data.len=size;
+	data.task=0;
+	data.type=MAT_TYPE_USED;
+	
+	if(matinsert(block,&data)==-1)return NULL;
+	return start;
+}
+
+void* malloc(size_t size)
+{
+	return malloc_align(size,1);
+}
+
+void free(void* ptr)
+{
+	s64 block=matfind(ptr);
+	if(block==-1)return;
+	if(__memory_mat->block[block].type!=MAT_TYPE_USED)return;
+	matremove(block);
 }
 
 u8 matbuild()
@@ -209,7 +283,7 @@ u8 matbuild()
 
 	__memory_mat->memsize=(SMAP_TABLE+SMAP_COUNT-1)->base+(SMAP_TABLE+SMAP_COUNT-1)->len;
 	__memory_mat->count=2;
-	__memory_mat->maxcount=64;  //todo
+	__memory_mat->maxcount=10;  //todo
 	__memory_mat->block[0].addr=0;
 	__memory_mat->block[0].len=0xec00;
 	__memory_mat->block[0].task=0;
@@ -227,7 +301,7 @@ u8 matbuild()
 			data.addr=(SMAP_TABLE+i)->base;
 			data.len=(SMAP_TABLE+i)->len;
 			data.type=MAT_TYPE_OTHER;
-			if(matinsert(__memory_mat,__memory_mat->count-1,&data)==-1)return 0;
+			if(matinsert(__memory_mat->count-1,&data)==-1)return 0;
 		}
 		if((SMAP_TABLE+i)->base+(SMAP_TABLE+i)->len<(SMAP_TABLE+i+1)->base)
 		{
@@ -235,7 +309,7 @@ u8 matbuild()
 			data.addr=(SMAP_TABLE+i)->base+(SMAP_TABLE+i)->len;
 			data.len=(SMAP_TABLE+i+1)->base-(u64)data.addr;
 			data.type=MAT_TYPE_OTHER;
-			if(matinsert(__memory_mat,__memory_mat->count-1,&data)==-1)return 0;
+			if(matinsert(__memory_mat->count-1,&data)==-1)return 0;
 		}
 	}
 
@@ -245,7 +319,7 @@ u8 matbuild()
 		data.addr=(SMAP_TABLE+SMAP_COUNT-1)->base;
 		data.len=(SMAP_TABLE+SMAP_COUNT-1)->len;
 		data.type=MAT_TYPE_OTHER;
-		if(matinsert(__memory_mat,__memory_mat->count-1,&data)==-1)return 0;
+		if(matinsert(__memory_mat->count-1,&data)==-1)return 0;
 	}
 	
 	for(i=0;i<__memory_mat->count-1;i++)
@@ -258,7 +332,7 @@ u8 matbuild()
 				=__memory_mat->block[i+1].addr
 				+__memory_mat->block[i+1].len
 				-__memory_mat->block[i].addr;
-			if(!matremove(__memory_mat,i+1))return 0;
+			if(!matremove(i+1))return 0;
 		}
 	}
 
@@ -269,57 +343,9 @@ u8 matbuild()
 	insdata.addr=0x100000;
 	insdata.len=sizeof(struct mat)+sizeof(struct mat_block)*(__memory_mat->maxcount);
 	insdata.type=MAT_TYPE_USED;
-	if(matinsert(__memory_mat,i,&insdata)==-1)return 0;
+	if(matinsert(i,&insdata)==-1)return 0;
 
 	return 1;
-}
-
-s64 malloc_find(size_t size,size_t align)
-{
-	if(size==0)return -1;
-	if(align==0)return -1;
-
-	u64 i;
-	for(i=0;i<__memory_mat->count-1;i++)
-	{
-		void *start=__memory_mat->block[i].addr+__memory_mat->block[i].len;
-		start=(((size_t)start-1)/align+1)*align;
-		void *end=__memory_mat->block[i+1].addr;
-		if(start>=end)continue;
-		if(end-start<size)continue;
-		return i+1;
-	}
-}
-
-void* malloc_align(size_t size,size_t align)
-{
-	s64 block=malloc_find(size,align);
-	if(block==-1)return NULL;
-
-	void *start=__memory_mat->block[block-1].addr+__memory_mat->block[block-1].len;
-	start=(((size_t)start-1)/align+1)*align;
-
-	struct mat_block data;
-	data.addr=start;
-	data.len=size;
-	data.task=0;
-	data.type=MAT_TYPE_USED;
-	
-	if(matinsert(__memory_mat,block,&data)==-1)return NULL;
-	return start;
-}
-
-void* malloc(size_t size)
-{
-	return malloc_align(size,1);
-}
-
-void free(void* ptr)
-{
-	s64 block=matfind(__memory_mat,ptr);
-	if(block==-1)return;
-	if(__memory_mat->block[block].type!=MAT_TYPE_USED)return;
-	matremove(__memory_mat,block);
 }
 
 #endif
