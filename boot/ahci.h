@@ -371,7 +371,7 @@ void stop_ahci_cmd(volatile struct hba_port *port)
 	while((port->cmd&HBA_PORT_CMD_FR)||(port->cmd&HBA_PORT_CMD_CR));
 }
 
-static void *__ahci_base;
+void *__ahci_base;
 
 void ahciportrebase(volatile struct hba_port *port,u8 portno)
 {
@@ -396,8 +396,8 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 	start_ahci_cmd(port);
 }
 
-static volatile struct hba_mem *__ahci_abar;
-static u8 __ahci_drives[128],__ahci_drivescnt;
+volatile struct hba_mem *__ahci_abar;
+u8 __ahci_drives[128],__ahci_drivescnt;
 
 s8 initdrive()
 {

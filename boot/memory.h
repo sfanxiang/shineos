@@ -131,7 +131,7 @@ struct mat{
 #define MAT_TYPE_OTHER 2
 #define MAT_TYPE_END 4
 
-static struct mat *__memory_mat;
+struct mat *__memory_mat;
 
 s64 matfind(void *addr)
 {
