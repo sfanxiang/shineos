@@ -7,7 +7,7 @@
 
 .globl kernel_size
 kernel_size:
-	.quad _end-_start
+	.quad _end-kernel_size
 
 .globl _start
 _start:

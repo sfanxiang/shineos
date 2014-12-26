@@ -61,7 +61,6 @@ void main()
 			puts("Error:\nFailed reading drive #");
 			puts(itoa(i,buf,10));
 			puts(".\n");
-			stopdrive();
 			continue;
 		}
 		if(((struct mbr*)diskbuf)->disksign==disksign)
@@ -77,27 +76,38 @@ void main()
 				puts("Error:\nCannot open \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
-				stopdrive();
+				continue;
+			}
+
+			void *ksize=malloc(blocksize*512);
+			if(!readfile(i,part,pfile,1,blocksize,ksize,NULL,NULL))
+			{
+				u8 buf[20];
+				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
+				puts(itoa(i,buf,10));
+				puts(".\n");
 				continue;
 			}
 			
-			void *kernel=malloc_align(filesize,1024);
+			void *kernel=malloc_align(*((size_t*)ksize),1024);
 			if(!kernel)error("Cannot allocate memory for kernel.",1);
+			free(ksize);
 			
-			if(!readfile(i,part,pfile,filesize,blocksize,
+			if(!readfile(i,part,pfile,0x7fffffff,blocksize,
 			             kernel,NULL,NULL))
 			{
 				u8 buf[20];
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
-				stopdrive();
 				continue;
 			}
+			
 			stopdrive();
-			((void(*)())kernel)();
+			((void(*)())kernel+sizeof(size_t))();
 		}
 	}
-	
+
+	stopdrive();
 	error("No kernel.",1);
 }

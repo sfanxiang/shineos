@@ -11,9 +11,9 @@ SECTIONS
 
 	.data :
 	{
-		 _data = .;
-		 *(.data)
-		 . = ALIGN(1024);
+		_data = .;
+		*(.data)
+		. = ALIGN(1024);
 	}
 
 	.bss :

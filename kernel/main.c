@@ -3,6 +3,5 @@
 
 void kmain()
 {
-	size_t size=getmemorysize();
 	haltcpu();
 }
