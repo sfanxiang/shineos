@@ -68,9 +68,8 @@ void main()
 			struct mbr *diskmbr=(struct mbr*)diskbuf;
 			u32 part=diskmbr->parttable[diskpart].firstlba;
 			u16 blocksize;u32 pfile;
-			u32 filesize;
 			if(!openfile(i,part,"/sys/kernel",&pfile,
-			             &blocksize,&filesize))
+			             &blocksize,NULL))
 			{
 				u8 buf[20];
 				puts("Error:\nCannot open \"/sys/kernel\" in drive #");
@@ -80,12 +79,14 @@ void main()
 			}
 
 			void *ksize=malloc(blocksize*512);
+			if(!ksize)error("Cannot allocate memory for kernel.",1);
 			if(!readfile(i,part,pfile,1,blocksize,ksize,NULL,NULL))
 			{
 				u8 buf[20];
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
+				free(ksize);
 				continue;
 			}
 			
@@ -100,6 +101,7 @@ void main()
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
+				free(kernel);
 				continue;
 			}
 			
