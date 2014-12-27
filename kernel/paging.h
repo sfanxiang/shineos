@@ -3,7 +3,7 @@
 
 #ifdef __x86_64__
 
-#include "defines.h"
+#include "memory.h"
 
 extern u64* setpaging();
 extern u8 initpaging();
