@@ -3,11 +3,14 @@
 
 #ifdef __x86_64__
 
-#include "memory.h"
+#include "defines.h"
 
-extern u64* setpaging();
+extern u64* buildpaging();
+extern void setpaging(u64 *ptr);
 extern u8 initpaging();
 extern void invlpaging();
+
+#include "memory.h"
 
 #endif
 

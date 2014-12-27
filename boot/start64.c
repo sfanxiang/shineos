@@ -90,7 +90,7 @@ void main()
 				continue;
 			}
 			
-			void *kernel=malloc_align(*((size_t*)ksize),4096);
+			void *kernel=calloc_align(1,*((size_t*)ksize),4096);
 			if(!kernel)error("Cannot allocate memory for kernel.",1);
 			free(ksize);
 			

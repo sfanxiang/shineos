@@ -121,6 +121,19 @@ void* kmalloc(size_t size)
 	return kmalloc_align(size,1);
 }
 
+void* kcalloc_align(size_t num,size_t size,size_t align)
+{
+	void *addr=kmalloc_align(size*num,align);
+	if(!addr)return NULL;
+	memset(addr,0,sizeof(addr));
+	return addr;
+}
+
+void* kcalloc(size_t num,size_t size)
+{
+	return kcalloc_align(num,size,1);
+}
+
 void kfree(void* ptr)
 {
 	s64 block=matfind(ptr);

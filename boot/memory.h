@@ -254,6 +254,19 @@ void* malloc(size_t size)
 	return malloc_align(size,1);
 }
 
+void* calloc_align(size_t num,size_t size,size_t align)
+{
+	void *addr=malloc_align(size*num,align);
+	if(!addr)return NULL;
+	memset(addr,0,sizeof(addr));
+	return addr;
+}
+
+void* calloc(size_t num,size_t size)
+{
+	return calloc_align(num,size,1);
+}
+
 void free(void* ptr)
 {
 	s64 block=matfind(ptr);

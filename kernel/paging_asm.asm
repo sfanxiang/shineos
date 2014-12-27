@@ -3,18 +3,9 @@
 
 .section .text
 
-.extern setpaging
-
-.globl initpaging
-initpaging:
-	call setpaging
-	cmp rax,0
-	je initpaging_err
-	mov cr3,rax
-	mov al,1
-	ret
-initpaging_err:
-	mov al,0
+.globl setpaging
+setpaging:
+	mov cr3,rdi
 	ret
 
 .globl invlpaging

@@ -5,6 +5,11 @@
 
 #include "defines.h"
 
+#define SEL_CODE 24
+#define SEL_DATA 32
+#define SEL_CODE_USER 40
+#define SEL_DATA_USER 48
+
 #pragma pack(push,1)
 
 struct smap_entry{
@@ -49,6 +54,8 @@ struct mat{
 
 extern void* kmalloc_align(size_t size,size_t align);
 extern void* kmalloc(size_t size);
+extern void* kcalloc_align(size_t num,size_t size,size_t align);
+extern void* kcalloc(size_t num,size_t size);
 extern void kfree(void* ptr);
 extern struct mat* getmat();
 extern void setmat(struct mat* mat);

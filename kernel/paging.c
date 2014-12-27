@@ -1,6 +1,6 @@
 #include "paging.h"
 
-u64* setpaging()
+u64* buildpaging()
 {
 	size_t memsize=getmat()->memsize;
 	u64 *p0,*p1,*p2,*p3;
@@ -48,4 +48,14 @@ u64* setpaging()
 		*(p3+i)=((size_t)4096*i)|3;
 	
 	return p0;
+}
+
+u64 *pagetable;
+
+u8 initpaging()
+{
+	pagetable=buildpaging();
+	if(!pagetable)return 0;
+	setpaging(pagetable);
+	return 1;
 }
