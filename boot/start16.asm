@@ -104,6 +104,10 @@ gdt_code64:
 	dq 0x00209a0000000000
 gdt_data64:
 	dq 0x0020920000000000
+gdt_code64_user:
+	dq 0x0020fa0000000000
+gdt_data64_user:
+	dw 0x0020f20000000000
 
 gdt_ptr:
 	dw $-gdt-1

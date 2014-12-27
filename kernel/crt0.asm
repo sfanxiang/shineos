@@ -12,7 +12,9 @@ kernel_size:
 .globl _start
 _start:
 	lea rsp,stack_top[rip]
+	push rdi
 	call _init
+	pop rdi
 	jmp kmain
 
 .section .stack,"aw",@nobits

@@ -6,14 +6,14 @@ SECTIONS
 		_code = .;
 		*(.text)
 		*(.rodata*)
-		. = ALIGN(1024);
+		. = ALIGN(4096);
 	}
 
 	.data :
 	{
 		_data = .;
 		*(.data)
-		. = ALIGN(1024);
+		. = ALIGN(4096);
 	}
 
 	.bss :
@@ -22,7 +22,7 @@ SECTIONS
 		*(.bss)
 		*(COMMON)
 		*(.stack)
-		. = ALIGN(1024);
+		. = ALIGN(4096);
 	}
 
 	_end = .;

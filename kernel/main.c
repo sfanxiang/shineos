@@ -1,7 +1,10 @@
 #include "defines.h"
-#include "memory.h"
+#include "paging.h"
 
-void kmain()
+void kmain(struct mat* mat)
 {
-	haltcpu();
+	setmat(mat);
+	if(!initpaging())
+		haltcpu();
+	for(;;);
 }
