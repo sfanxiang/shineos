@@ -27,9 +27,11 @@ struct idt_ptr{
 
 extern void loadidt(struct idt_ptr *idtr);
 extern u8 registerinterrupt(u16 num,void(*handler)
-                            (u16 num,u16 ss,u64 rsp,u32 eflags,u16 cs,u64 rip),
-                            u8 attr);
+                            (u16 num,u16 ss,u64 rsp,u64 rflags,
+                             u16 cs,u64 rip,u64 errorcode),u8 attr);
 extern u8 unregisterinterrupt(u16 num);
+extern u8 isinterruptregistered(u16 num);
+extern void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode);
 extern u8 initinterrupt();
 
 #endif

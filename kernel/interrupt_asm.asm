@@ -9,33 +9,48 @@ loadidt:
 	ret
 
 inthandler_base:
-inthandler_base_num:
-	.word 0
 inthandler_base_handler:
 	.quad 0
+inthandler_base_num:
+	.word 0
+inthandler_base_haveerrcode:
+	.byte 0
 inthandler_base_code:
+	cmp byte ptr inthandler_base_haveerrcode[rip],0
+	jne inthandler_base_skiperrcode
+	pushq 0
+inthandler_base_skiperrcode:
 	push rbp
 	mov rbp,rsp
-	push di
-	push si
+	push rdi
+	push rsi
 	push rdx
 	push rcx
 	push r8
 	push r9
+	push rax
+	push r10
+	push r11
 	mov di,inthandler_base_num[rip]
-	mov si,[rbp+40]
-	mov rdx,[rbp+32]
-	mov ecx,[rbp+24]
-	mov r8w,[rbp+16]
-	mov r9,[rbp+8]
-	call inthandler_base_handler[rip]
+	mov si,[rbp+48]
+	mov rdx,[rbp+40]
+	mov rcx,[rbp+32]
+	mov r8w,[rbp+24]
+	mov r9,[rbp+16]
+	push qword ptr [rbp+8]
+	call qword ptr inthandler_base_handler[rip]
+	add rsp,8
+	pop r11
+	pop r10
+	pop rax
 	pop r9
 	pop r8
 	pop rcx
 	pop rdx
-	pop si
-	pop di
+	pop rsi
+	pop rdi
 	pop rbp
+	add rsp,8
 	iretq
 
 .globl getinthandler_base_size
