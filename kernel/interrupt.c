@@ -28,6 +28,8 @@ u8 buildinterrupt(u16 count)
 u8 registerinterrupt(u16 num,void(*handler)
                      (u16 num,u16 ss,u64 rsp,u32 eflags,u16 cs,u64 rip),u8 attr)
 {
+	if(!idtr|!idt_table)return 0;
+	if((idtr->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if((idt_table+num)->attr!=0)return 0;
 	
 	void* handler_base=kmalloc(getinthandler_base_size());
@@ -49,6 +51,8 @@ u8 registerinterrupt(u16 num,void(*handler)
 
 u8 unregisterinterrupt(u16 num)
 {
+	if(!idtr|!idt_table)return 0;
+	if((idtr->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if((idt_table+num)->attr==0)return 0;
 
 	kfree((idt_table+num)->off_hi<<16+(idt_table+num)->off_lo-10);
