@@ -7,11 +7,6 @@
 
 #pragma pack(push,1)
 
-struct idt_ptr{
-	u16 limit;
-	void *base;
-};
-
 struct idt_desc{
 	u16 off_lo;
 	u16 sel;
@@ -19,6 +14,11 @@ struct idt_desc{
 	u8 attr;
 	u64 off_hi:48;
 	u32 zero1;
+};
+
+struct idt_ptr{
+	u16 limit;
+	struct idt_desc *base;
 };
 
 #pragma pack(pop)

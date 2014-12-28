@@ -3,7 +3,6 @@
 #include "interrupt.h"
 
 struct idt_ptr *idtr;
-struct idt_desc *idt_table;
 
 extern void* getinthandler_base();
 extern size_t getinthandler_base_size();
@@ -12,13 +11,13 @@ u8 buildinterrupt(u16 count)
 {
 	idtr=kmalloc(sizeof(struct idt_ptr));
 	if(!idtr)return 0;
-	idt_table=kcalloc(count,sizeof(struct idt_desc));
-	if(!idt_table)
+	idtr->base=kcalloc(count,sizeof(struct idt_desc));
+	if(!(idtr->base))
 	{
 		kfree(idtr);
+		idtr=NULL;
 		return 0;
 	}
-	idtr->base=idt_table;
 	idtr->limit=sizeof(struct idt_desc)*count-1;
 	loadidt(idtr);
 
@@ -28,9 +27,9 @@ u8 buildinterrupt(u16 count)
 u8 registerinterrupt(u16 num,void(*handler)
                      (u16 num,u16 ss,u64 rsp,u32 eflags,u16 cs,u64 rip),u8 attr)
 {
-	if(!idtr|!idt_table)return 0;
+	if(!idtr||!(idtr->base))return 0;
 	if((idtr->limit+1)/sizeof(struct idt_desc)<=num)return 0;
-	if((idt_table+num)->attr!=0)return 0;
+	if((idtr->base+num)->attr!=0)return 0;
 	
 	void* handler_base=kmalloc(getinthandler_base_size());
 	if(!handler_base)return 0;
@@ -39,24 +38,24 @@ u8 registerinterrupt(u16 num,void(*handler)
 	*((u16*)(handler_base))=num;
 	*((size_t*)(handler_base+2))=(size_t)handler;
 
-	(idt_table+num)->sel=SEL_CODE;
-	(idt_table+num)->zero0=0;
-	(idt_table+num)->zero1=0;
-	(idt_table+num)->attr=attr;
-	(idt_table+num)->off_lo=(size_t)handler_base+10;
-	(idt_table+num)->off_hi=((size_t)handler_base+10)>>16;
+	(idtr->base+num)->sel=SEL_CODE;
+	(idtr->base+num)->zero0=0;
+	(idtr->base+num)->zero1=0;
+	(idtr->base+num)->attr=attr;
+	(idtr->base+num)->off_lo=(size_t)handler_base+10;
+	(idtr->base+num)->off_hi=((size_t)handler_base+10)>>16;
 
 	return 1;
 }
 
 u8 unregisterinterrupt(u16 num)
 {
-	if(!idtr|!idt_table)return 0;
+	if(!idtr||!(idtr->base))return 0;
 	if((idtr->limit+1)/sizeof(struct idt_desc)<=num)return 0;
-	if((idt_table+num)->attr==0)return 0;
+	if((idtr->base+num)->attr==0)return 0;
 
-	kfree((idt_table+num)->off_hi<<16+(idt_table+num)->off_lo-10);
-	memset(idt_table+num,0,sizeof(struct idt_desc));
+	kfree((idtr->base+num)->off_hi<<16+(idtr->base+num)->off_lo-10);
+	memset(idtr->base+num,0,sizeof(struct idt_desc));
 	return 1;
 }
 
