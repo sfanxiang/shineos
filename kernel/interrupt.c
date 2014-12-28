@@ -65,7 +65,7 @@ u8 isinterruptregistered(u16 num)
 {
 	if(!idtr||!(idtr->base))return 0;
 	if((idtr->limit+1)/sizeof(struct idt_desc)<=num)return 0;
-	return (idtr->base+num)->attr;
+	return ((idtr->base+num)->attr!=0);
 }
 
 void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode)
