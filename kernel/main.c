@@ -20,6 +20,6 @@ void kmain(struct mat* mat)
 		error("Failed initializing paging.",1);
 	if(!initinterrupt())
 		error("Failed initializing interrupt.",1);
-	
+
 	for(;;);
 }
