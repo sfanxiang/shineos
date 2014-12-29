@@ -366,12 +366,14 @@ u8 matbuild()
 		}
 	}
 
+	struct mat_block insdata;
+	
 	for(i=0;i<__memory_mat->count;i++)
 		if(__memory_mat->block[i].addr>0x100000)break;
 	if(i>=__memory_mat->count)return 0;
-	struct mat_block insdata;
 	insdata.addr=0x100000;
 	insdata.len=sizeof(struct mat)+sizeof(struct mat_block)*(__memory_mat->maxcount);
+	insdata.task=0;
 	insdata.type=MAT_TYPE_USED;
 	if(matinsert(i,&insdata)==-1)return 0;
 
@@ -380,6 +382,7 @@ u8 matbuild()
 	if(i>=__memory_mat->count)return 0;
 	insdata.addr=0x80000;
 	insdata.len=0x1000*2+512*16*8;
+	insdata.task=0;
 	insdata.type=MAT_TYPE_USED;
 	if(matinsert(i,&insdata)==-1)return 0;
 
