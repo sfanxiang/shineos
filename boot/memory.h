@@ -375,6 +375,14 @@ u8 matbuild()
 	insdata.type=MAT_TYPE_USED;
 	if(matinsert(i,&insdata)==-1)return 0;
 
+	for(i=0;i<__memory_mat->count;i++)
+		if(__memory_mat->block[i].addr>0x80000)break;
+	if(i>=__memory_mat->count)return 0;
+	insdata.addr=0x80000;
+	insdata.len=0x1000*2+512*16*8;
+	insdata.type=MAT_TYPE_USED;
+	if(matinsert(i,&insdata)==-1)return 0;
+
 	return 1;
 }
 
