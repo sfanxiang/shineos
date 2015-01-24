@@ -12,7 +12,7 @@
 
 #ifdef __x86_64__
 
-#include "ahci.h"
+#include "drive.h"
 #include "string.h"
 
 #endif

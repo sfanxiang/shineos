@@ -22,7 +22,50 @@ void main()
 {
 	puts("Starting ShineOS...\n");
 
-	if(SMAP_COUNT!=-1)
+	if(SMAP_COUNT==-1)
+	{
+		error("Cannot fetch memory layout, detecting memory...",0);
+		SMAP_COUNT=1;
+		(SMAP_TABLE+0)->base=0;
+		(SMAP_TABLE+0)->len=0x9fc00;
+		(SMAP_TABLE+0)->type=SMAP_TYPE_USABLE;
+		(SMAP_TABLE+0)->acpi=0;
+		volatile u64 *i;
+		volatile u64 dummy;
+		u8 iscurusable=0;
+		size_t reservedcnt=0;
+		for(i=0x100000;;i+=0x1000)
+		{
+			u64 origin=*i;
+			u64 reverse=~origin;
+			*i=reverse;
+			asm("":::"memory");
+			dummy=origin;
+			__asm__ __volatile__("wbinvd":::"memory");
+			if(*i==reverse)
+			{
+				reservedcnt=0;
+				if(!iscurusable)
+				{
+					iscurusable=1;
+					(SMAP_TABLE+SMAP_COUNT)->base=i;
+					(SMAP_TABLE+SMAP_COUNT)->len=0x1000;
+					(SMAP_TABLE+SMAP_COUNT)->type=SMAP_TYPE_USABLE;
+					(SMAP_TABLE+SMAP_COUNT)->acpi;
+					SMAP_COUNT++;
+				}
+				else
+					(SMAP_TABLE+SMAP_COUNT-1)->len+=0x1000;
+			}
+			else
+			{
+				iscurusable=0;
+				reservedcnt+=0x1000;
+				if(reservedcnt>0x40000000)break;
+			}
+			*i=origin;
+		}
+	}
 	{
 		puts("Memory layout:\n");
 		u16 i;
@@ -38,14 +81,12 @@ void main()
 			putchar('\n');
 		}
 	}
-	else
-		error("Failed detecting memory.",1);
 
 	if(!matbuild())
 		error("Failed building MAT.",1);
 
 	s8 drivecnt;
-	if((drivecnt=initdrive())==-1)
+	if((drivecnt=driveinit())==-1)
 		error("Failed initializing drive.",1);
 
 	u32 disksign=*(u32*)(0x7c00+5);
@@ -105,11 +146,11 @@ void main()
 				continue;
 			}
 			
-			stopdrive();
+			drivestop();
 			((void(*)(struct mat*))(kernel+sizeof(size_t)))(__memory_mat);
 		}
 	}
 
-	stopdrive();
+	drivestop();
 	error("No kernel.",1);
 }

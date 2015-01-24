@@ -92,7 +92,7 @@ void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 error
 
 u8 initinterrupt()
 {
-	if(!buildinterrupt(0x100))return 0;
+	if(!buildinterrupt(0xff))return 0;
 	u16 i;
 	for(i=0;i<=7;i++)
 	{

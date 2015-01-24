@@ -1,4 +1,5 @@
-#include "defines.h"
+#include "apic.h"
+#include "interrupt.h"
 #include "paging.h"
 
 void error(char *msg,u8 halt)
@@ -20,6 +21,8 @@ void kmain(struct mat* mat)
 		error("Failed initializing paging.",1);
 	if(!initinterrupt())
 		error("Failed initializing interrupt.",1);
+	if(!initapic())
+		error("Failed initializing APIC.",1);
 
 	for(;;);
 }

@@ -399,7 +399,7 @@ void ahciportrebase(volatile struct hba_port *port,u8 portno)
 volatile struct hba_mem *__ahci_abar;
 u8 __ahci_drives[128],__ahci_drivescnt;
 
-s8 initdrive()
+s8 ahciinit()
 {
 	__ahci_abar=getabar();
 	if(!__ahci_abar)return -1;
@@ -417,7 +417,7 @@ s8 initdrive()
 	return (s8)__ahci_drivescnt;
 }
 
-void stopdrive()
+void ahcistop()
 {
 	u8 i;
 	for(i=0;i<__ahci_drivescnt;i++)
@@ -426,7 +426,7 @@ void stopdrive()
 	__ahci_base=NULL;
 }
 
-u8 readdrive(u8 drive,u64 start,u32 count,void *buf)
+u8 ahciread(u8 drive,u64 start,u32 count,void *buf)
 {
 	return readahcidrive(&(__ahci_abar->ports[__ahci_drives[drive]]),start,count,buf);
 }

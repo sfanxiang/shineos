@@ -40,4 +40,35 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 
 #endif
 
+#ifdef __x86_64__
+
+#include "ahci.h"
+
+u8 __useahci;
+s8 driveinit()
+{
+	s8 drivescnt=ahciinit();
+	if(drivescnt==-1)
+	{
+		__useahci=0;
+		//todo
+		return -1;
+	}
+	__useahci=1;
+	return drivescnt;
+}
+
+void drivestop()
+{
+	if(__useahci)ahcistop();
+}
+
+u8 readdrive(u8 drive,u64 start,u32 count,void *buf)
+{
+	if(__useahci)return ahciread(drive,start,count,buf);
+	else return 0;
+}
+
+#endif
+
 #endif

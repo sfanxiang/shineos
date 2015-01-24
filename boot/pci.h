@@ -41,12 +41,10 @@ struct pci_config_std{
 enum pci_class{
 	PCI_NONE=0,
 	PCI_MASS_STORAGE=1,
-	//todo
 };
 
 enum pci_subclass_mass_storage{
 	PCI_SUB_SATA=6,
-	//todo
 };
 
 struct pci_device{

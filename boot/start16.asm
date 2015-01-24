@@ -15,9 +15,9 @@ disksign dd 0x12345678
 diskpart db 0
 
 real:
-	cli
 	mov ax,cs
 	mov ds,ax
+	mov es,ax
 	mov ss,ax
 	mov sp,start
 	
@@ -27,15 +27,14 @@ real:
 	mov ax,3
 	int 0x10
 
-	xor di,di
-	mov es,di
+getmemorymap:
 	mov di,0x500
-.getmemorymap:
+.get:
 	xor ebx,ebx
 	xor bp,bp
 	mov edx,0x0534d4150
 	mov eax,0xe820
-	mov dword [es:di+20],1
+	mov dword [cs:di+20],1
 	mov ecx,24
 	int 0x15
 	jc .failed
@@ -47,19 +46,19 @@ real:
 .loop:
 	mov edx,0x0534d4150
 	mov eax,0xe820
-	mov dword [es:di+20],1
+	mov dword [cs:di+20],1
 	mov ecx,24
 	int 0x15
-	jc short .finished
+	jc .finished
 .jmpin:
 	jcxz .skip
 	cmp cl,20
 	jbe .notext
-	test byte [es:di+20],1
+	test byte [cs:di+20],1
 	je .skip
 .notext:
-	mov ecx,[es:di+8]
-	or ecx,[es:di+12]
+	mov ecx,[cs:di+8]
+	or ecx,[cs:di+12]
 	jz .skip
 	inc bp
 	add di,24
@@ -73,20 +72,21 @@ real:
 	mov word [cs:0x1000],-1
 .return:
 
-	lgdt [gdt_ptr]
-	
-	in al,0x92
-	or al,2
-	out 0x92,al
-	
+	cli
+
 	mov al,0xff
 	out 0xa1,al
 	out 0x21,al
 	nop
 	nop
-	
-	lidt [idt]
-	
+
+	lgdt [gdt_ptr]
+	lidt [idt_ptr]
+
+	in al,0x92
+	or al,2
+	out 0x92,al
+
 	mov eax,cr0
 	or eax,1
 	mov cr0,eax
@@ -107,16 +107,16 @@ gdt_data64:
 gdt_code64_user:
 	dq 0x0020fa0000000000
 gdt_data64_user:
-	dw 0x0020f20000000000
+	dq 0x0020f20000000000
 
 gdt_ptr:
 	dw $-gdt-1
 	dd gdt
 
-idt:
+idt_ptr:
 	dw 0
 	dd 0
-	
+
 bits 32
 protected:
 	mov ax,SEL_DATA32
@@ -165,7 +165,7 @@ protected:
 	mov eax,cr0
 	or eax,0x80000000
 	mov cr0,eax
-	
+
 	jmp SEL_CODE64:long_start
 
 bits 64

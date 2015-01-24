@@ -9,6 +9,7 @@ extern u64* buildpaging();
 extern void setpaging(u64 *ptr);
 extern u8 initpaging();
 extern void invlpaging();
+extern u64* getpageentry(void *addr);
 
 #include "memory.h"
 
