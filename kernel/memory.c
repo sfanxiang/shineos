@@ -50,7 +50,7 @@ u8 matremove(u64 block)
 	return 1;
 }
 
-s64 kmalloc_find(size_t size,size_t align)
+s64 kmalloc_find(size_t size,size_t align,void **ret_start)
 {
 	if(size==0)return -1;
 	if(align==0)return -1;
@@ -59,10 +59,17 @@ s64 kmalloc_find(size_t size,size_t align)
 	for(i=0;i<__memory_mat->count-1;i++)
 	{
 		void *start=__memory_mat->block[i].addr+__memory_mat->block[i].len;
+		if(((size_t)start%4096)&&__memory_mat->block[i].task!=0)
+			start=((size_t)start+4095)/4096*4096;
 		start=(((size_t)start-1)/align+1)*align;
 		void *end=__memory_mat->block[i+1].addr;
+		if(((size_t)end%4096)&&
+			__memory_mat->block[i+1].type!=MAT_TYPE_END&&
+			__memory_mat->block[i+1].task!=0)
+			end=(size_t)end/4096*4096;
 		if(start>=end)continue;
 		if(end-start<size)continue;
+		if(ret_start)*ret_start=start;
 		return i+1;
 	}
 }
@@ -75,17 +82,15 @@ void* kmalloc_align(size_t size,size_t align)
 		u64 newcount=prevmat->count*3/2;
 		size_t newsize=sizeof(struct mat)
 		                  +sizeof(struct mat_block)*newcount;
-		s64 newblock=kmalloc_find(newsize,8);
+		s64 newblock=kmalloc_find(newsize,8,&__memory_mat);
 		if(newblock==-1)
 		{
 			newcount=prevmat->count+2;
 			newsize=sizeof(struct mat)+sizeof(struct mat_block)*newcount;
-			newblock=kmalloc_find(newsize,8);
+			newblock=kmalloc_find(newsize,8,&__memory_mat);
 			if(newblock==-1)return NULL;
 		}
 
-		__memory_mat=(((size_t)prevmat->block[newblock-1].addr
-		                +prevmat->block[newblock-1].len-1)/8+1)*8;
 		memcpy(__memory_mat,prevmat,sizeof(struct mat)
 		       +sizeof(struct mat_block)*(prevmat->count));
 		__memory_mat->maxcount=newcount;
@@ -100,11 +105,9 @@ void* kmalloc_align(size_t size,size_t align)
 		kfree(prevmat);
 	}
 
-	s64 block=kmalloc_find(size,align);
+	void *start;
+	s64 block=kmalloc_find(size,align,&start);
 	if(block==-1)return NULL;
-	
-	void *start=__memory_mat->block[block-1].addr+__memory_mat->block[block-1].len;
-	start=(((size_t)start-1)/align+1)*align;
 
 	struct mat_block data;
 	data.addr=start;

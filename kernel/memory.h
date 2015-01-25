@@ -60,6 +60,8 @@ extern void kfree(void* ptr);
 extern struct mat* getmat();
 extern void setmat(struct mat* mat);
 
+#include "paging.h"
+
 #endif
 
 #endif
