@@ -5,8 +5,12 @@
 
 #include "defines.h"
 
-extern u32 in32(u16 port);
-extern void out32(u16 port,u32 val);
+extern u8 inb(u16 port);
+extern void outb(u16 port,u8 val);
+extern u16 inw(u16 port);
+extern void outw(u16 port,u16 val);
+extern u32 inl(u16 port);
+extern void outl(u16 port,u32 val);
 
 #endif
 

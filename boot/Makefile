@@ -22,7 +22,7 @@ $(OUTPUT)/boot/start64:link.ld $(OUTPUT)/boot/crt0.o $(OUTPUT)/boot/start64.o $(
 $(OUTPUT)/boot/crt0.o:crt0.asm
 	$(AS64) -o $@ $<
 
-$(OUTPUT)/boot/start64.o:start64.c ahci.h defines.h display.h fs.h io.h memory.h pci.h string.h
+$(OUTPUT)/boot/start64.o:start64.c ahci.h ata.h defines.h drive.h display.h fs.h io.h memory.h pci.h string.h
 	$(CC64) -o $@ $<
 
 $(OUTPUT)/boot/display.o:display.asm

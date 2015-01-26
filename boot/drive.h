@@ -43,6 +43,7 @@ u8 readdrivesectors(u8 drive,struct dap *data)
 #ifdef __x86_64__
 
 #include "ahci.h"
+#include "ata.h"
 
 u8 __useahci;
 s8 driveinit()
@@ -51,8 +52,8 @@ s8 driveinit()
 	if(drivescnt==-1)
 	{
 		__useahci=0;
-		//todo
-		return -1;
+		drivescnt=atainit();
+		return drivescnt;
 	}
 	__useahci=1;
 	return drivescnt;

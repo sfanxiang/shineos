@@ -53,10 +53,10 @@ struct pci_device{
 
 u32 readpciconfig(struct pci_device *spec,u8 reg)
 {
-	out32(0xcf8,(((u32)(spec->bus)<<16)|((u32)(spec->slot)<<11)|
+	outl(0xcf8,(((u32)(spec->bus)<<16)|((u32)(spec->slot)<<11)|
 		((u32)(spec->func)<<8)|((u32)(reg&0xfc))|
 		((u32)0x80000000)));
-	return (in32(0xcfc)>>(((u16)reg&3)<<3));
+	return (inl(0xcfc)>>(((u16)reg&3)<<3));
 }
 
 u8 checkpcidevice(struct pci_device *spec)
