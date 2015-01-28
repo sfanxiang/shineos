@@ -74,11 +74,19 @@ getmemorymap:
 
 	cli
 
+	mov al,0x10
+	out 0x20,al
+	out 0xa0,al
+	mov al,32
+	out 0x21,al
+	out 0xa1,al
+	mov al,4
+	out 0x21,al
+	mov al,2
+	out 0xa1,al
 	mov al,0xff
 	out 0xa1,al
 	out 0x21,al
-	nop
-	nop
 
 	lgdt [gdt_ptr]
 	lidt [idt_ptr]

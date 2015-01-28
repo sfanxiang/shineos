@@ -98,7 +98,7 @@ void main()
 		u8 diskbuf[512];
 		if(!readdrive(i,0,1,diskbuf))
 		{
-			u8 buf[20];
+			char buf[20];
 			puts("Error:\nFailed reading drive #");
 			puts(itoa(i,buf,10));
 			puts(".\n");
@@ -112,7 +112,7 @@ void main()
 			if(!openfile(i,part,"/sys/kernel",&pfile,
 			             &blocksize,NULL))
 			{
-				u8 buf[20];
+				char buf[20];
 				puts("Error:\nCannot open \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
@@ -123,7 +123,7 @@ void main()
 			if(!ksize)error("Cannot allocate memory for kernel.",1);
 			if(!readfile(i,part,pfile,1,blocksize,ksize,NULL,NULL))
 			{
-				u8 buf[20];
+				char buf[20];
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");
@@ -138,7 +138,7 @@ void main()
 			if(!readfile(i,part,pfile,0x7fffffff,blocksize,
 			             kernel,NULL,NULL))
 			{
-				u8 buf[20];
+				char buf[20];
 				puts("Error:\nFailed reading \"/sys/kernel\" in drive #");
 				puts(itoa(i,buf,10));
 				puts(".\n");

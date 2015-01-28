@@ -62,12 +62,13 @@ s8 driveinit()
 void drivestop()
 {
 	if(__useahci)ahcistop();
+	else atastop();
 }
 
 u8 readdrive(u8 drive,u64 start,u32 count,void *buf)
 {
 	if(__useahci)return ahciread(drive,start,count,buf);
-	else return 0;
+	else return ataread(drive,start,count,buf);
 }
 
 #endif

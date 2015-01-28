@@ -20,7 +20,7 @@ u64 apicread(u32 reg)
 #ifdef ENABLE_X2APIC
 	return readmsr(0x800+reg);
 #else
-	return *((volatile u64*)(apicbase+reg*0x10));
+	return *((volatile u32*)(apicbase+reg*0x10));
 #endif
 }
 
@@ -29,7 +29,7 @@ void apicwrite(u32 reg,u64 val)
 #ifdef ENABLE_X2APIC
 	writemsr(0x800+reg,val);
 #else
-	*((volatile u64*)(apicbase+reg*0x10))=val;
+	*((volatile u32*)(apicbase+reg*0x10))=val;
 #endif
 }
 
@@ -59,8 +59,6 @@ u8 initapic()
 	u64 *basepage=getpageentry(apicbase);
 	*basepage=((*basepage)&(~0xfff))|0b11011;
 	invlpaging();
-
-	memcpy(apicbase,0xfee00000,4096);
 
 	apicwrite(APIC_REG_DFR,0xffffffff);
 	apicwrite(APIC_REG_LDR,
@@ -96,8 +94,6 @@ u8 initapic()
 	if(!registerinterrupt(0x81,int_timer,0))
 		return 0;
 
-	enable_int();
-
 	memset(&lvt,0,sizeof(lvt));
 	lvt.vector=0x81;
 	lvt.dmode=APIC_LVT_DMODE_FIXED;
@@ -106,8 +102,9 @@ u8 initapic()
 	lvt.timer=APIC_LVT_TIMER_PERIODIC;
 	apicwrite(APIC_REG_LVT_TMR,*((u32*)(&lvt)));
 
-	apicwrite(APIC_REG_TMRDIV,0x10);
-	apicwrite(APIC_REG_TMRINITCNT,0x10);
+	apicwrite(APIC_REG_TMRDIV,0x3);
+	apicwrite(APIC_REG_TMRINITCNT,0x80);
 
+	enable_int();
 	return 1;
 }
