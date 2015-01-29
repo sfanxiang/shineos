@@ -13,6 +13,7 @@ start:
 
 disksign dd 0x12345678
 diskpart db 0
+startcnt db 0
 
 real:
 	mov ax,cs
@@ -20,6 +21,10 @@ real:
 	mov es,ax
 	mov ss,ax
 	mov sp,start
+	
+	lock add byte [cs:startcnt],1
+	cmp byte [cs:startcnt],1
+	jnz $
 	
 	mov ah,0
 	int 0x13
