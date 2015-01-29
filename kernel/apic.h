@@ -8,8 +8,6 @@
 #include "memory.h"
 #include "paging.h"
 
-#define ENABLE_X2APIC
-
 #define APIC_BASE_MSR 0x1b
 
 enum apic_regs{
