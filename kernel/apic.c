@@ -49,10 +49,10 @@ u8 initapic()
 	struct apic_lvt lvt;
 	memset(&lvt,0,sizeof(lvt));
 	lvt.vector=0x81;
-	lvt.dmode=APIC_LVT_DMODE_FIXED;
-	lvt.trigger=APIC_LVT_TRIGGER_EDGE;
+	lvt.delmode=APIC_DELIVERYMODE_FIXED;
+	lvt.trigger=APIC_TRIGGER_EDGE;
 	lvt.mask=0;
-	lvt.timer=APIC_LVT_TIMER_PERIODIC;
+	lvt.timer=APIC_TIMER_PERIODIC;
 	apicwrite(APIC_REG_LVT_TMR,*((u32*)(&lvt)));
 
 	apicwrite(APIC_REG_TMRDIV,0x3);

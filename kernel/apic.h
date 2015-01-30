@@ -47,11 +47,24 @@ struct apic_spurious{
 	u32 reserved1:19;
 }__attribute__((packed));
 
+struct apic_icr{
+	u8 vector;
+	u8 delmode:3;
+	u8 destmode:1;
+	u8 reserved0:2;
+	u8 level:1;
+	u8 trigger:1;
+	u8 reserved1:2;
+	u8 destshort:2;
+	u16 reserved2:12;
+	u32 dest;
+}__attribute__((packed));
+
 struct apic_lvt{
 	u8 vector;
-	u8 dmode:3;
+	u8 delmode:3;
 	u8 reserved0:1;
-	u8 dstatus:1;
+	u8 delstatus:1;
 	u8 pinpolar:1;
 	u8 remoteirr:1;
 	u8 trigger:1;
@@ -60,10 +73,20 @@ struct apic_lvt{
 	u16 reserved1:13;
 }__attribute__((packed));
 
-#define APIC_LVT_DMODE_FIXED 0
-#define APIC_LVT_TRIGGER_EDGE 0
-#define APIC_LVT_TIMER_ONESHOT 0
-#define APIC_LVT_TIMER_PERIODIC 1
+#define APIC_DELIVERYMODE_FIXED 0
+#define APIC_DELIVERYMODE_STARTUP 0b110
+#define APIC_DESTINATIONMODE_PHYSICAL 0
+#define APIC_DESTINATIONMODE_LOGICAL 1
+#define APIC_LEVEL_DEASSERT 0
+#define APIC_LEVEL_ASSERT 1
+#define APIC_TRIGGER_EDGE 0
+#define APIC_TRIGGER_LEVEL 1
+#define APIC_DESTSHORTHAND_NONE 0
+#define APIC_DESTSHORTHAND_SELF 1
+#define APIC_DESTSHORTHAND_ALLINCSELF 2
+#define APIC_DESTSHORTHAND_ALLEXCSELF 3
+#define APIC_TIMER_ONESHOT 0
+#define APIC_TIMER_PERIODIC 1
 
 extern u64 apicread(u32 reg);
 extern void apicwrite(u32 reg,u64 val);
