@@ -24,8 +24,11 @@ real:
 	
 	lock add byte [cs:startcnt],1
 	cmp byte [cs:startcnt],1
-	jnz $
-	
+	jz bsp
+	cli
+stop:	jmp stop
+
+bsp:
 	mov ah,0
 	int 0x13
 

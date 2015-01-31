@@ -7,6 +7,7 @@
 
 extern void haltcpu();
 extern void enable_int();
+extern void disable_int();
 extern u64 readmsr(u32 reg);
 extern void writemsr(u32 reg,u64 num);
 

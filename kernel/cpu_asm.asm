@@ -15,6 +15,11 @@ enable_int:
 	sti
 	ret
 
+.globl disable_int
+disable_int:
+	cli
+	ret
+
 .globl readmsr
 readmsr:
 	push rdx
