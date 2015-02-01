@@ -16,7 +16,7 @@ memset:
 	mov rax,rdi
 	push rax
 	push rcx
-	mov ax,si
+	mov al,sil
 	mov rcx,rdx
 	cld
 	rep stosb

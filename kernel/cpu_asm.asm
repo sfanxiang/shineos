@@ -42,3 +42,9 @@ writemsr:
 	wrmsr
 	pop rdx
 	ret
+
+.globl getcpuflags
+getcpuflags:
+	pushfq
+	pop rax
+	ret

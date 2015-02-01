@@ -3,11 +3,13 @@
 
 #ifdef __x86_64__
 
+#include "acpi.h"
 #include "apic.h"
-#include "cpu.h"
+#include "cmos.h"
 #include "io.h"
+#include "misc.h"
 
-extern void initmp();
+extern u32 initmp();
 
 #endif
 

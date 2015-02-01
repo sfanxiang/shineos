@@ -13,7 +13,7 @@ start:
 
 disksign dd 0x12345678
 diskpart db 0
-startcnt db 0
+startcnt dd 0
 
 real:
 	mov ax,cs
@@ -22,8 +22,8 @@ real:
 	mov ss,ax
 	mov sp,start
 	
-	lock add byte [cs:startcnt],1
-	cmp byte [cs:startcnt],1
+	lock inc dword [cs:startcnt]
+	cmp dword [cs:startcnt],1
 	jz bsp
 	cli
 stop:	jmp stop
