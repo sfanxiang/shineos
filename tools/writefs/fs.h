@@ -12,7 +12,7 @@ using namespace std;
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "types.h"
+#include "defines.h"
 
 #define HD_SECTOR_SIZE 512
 

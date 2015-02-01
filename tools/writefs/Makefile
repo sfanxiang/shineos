@@ -1,2 +1,2 @@
-$(OUTPUT)/tools/writefs:main.cc types.h fs.h
+$(OUTPUT)/tools/writefs:main.cc defines.h fs.h
 	$(CPPCUR) -o $@ $<

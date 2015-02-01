@@ -2,8 +2,8 @@
 #include <iostream>
 using namespace std;
 
+#include "defines.h"
 #include "fs.h"
-#include "types.h"
 
 int main(int argc,char *argv[])
 {
