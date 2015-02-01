@@ -21,9 +21,9 @@ void kmain(struct mat* mat)
 	if(!initpaging())
 		error("Failed initializing paging.",1);
 	if(!initinterrupt())
-		error("Failed initializing interrupt.",1);	
+		error("Failed initializing interrupt.",1);
 	if(!initapic())
-		error("Failed initializing APIC.",1);	
+		error("Failed initializing APIC.",1);
 	if(!initacpi())
 		error("Failed initializing ACPI.",1);
 	if(!initmp())
