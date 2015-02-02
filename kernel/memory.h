@@ -35,7 +35,7 @@ struct smap_entry{
 struct mat_block{
 	void *addr;
 	size_t len;
-	u64 task;
+	u64 proc;
 	u64 type;
 };
 

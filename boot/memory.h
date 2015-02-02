@@ -114,7 +114,7 @@ struct smap_entry{
 struct mat_block{
 	void *addr;
 	size_t len;
-	u64 task;
+	u64 proc;
 	u64 type;
 };
 
@@ -226,7 +226,7 @@ void* malloc_align(size_t size,size_t align)
 		struct mat_block blockdata;
 		blockdata.addr=__memory_mat;
 		blockdata.len=newsize;
-		blockdata.task=0;
+		blockdata.proc=0;
 		blockdata.type=MAT_TYPE_USED;
 		if(matinsert(newblock,&blockdata)==-1)return NULL;
 		
@@ -242,7 +242,7 @@ void* malloc_align(size_t size,size_t align)
 	struct mat_block data;
 	data.addr=start;
 	data.len=size;
-	data.task=0;
+	data.proc=0;
 	data.type=MAT_TYPE_USED;
 	
 	if(matinsert(block,&data)==-1)return NULL;
@@ -316,11 +316,11 @@ u8 matbuild()
 	__memory_mat->maxcount=64;
 	__memory_mat->block[0].addr=0;
 	__memory_mat->block[0].len=0xec00;
-	__memory_mat->block[0].task=0;
+	__memory_mat->block[0].proc=0;
 	__memory_mat->block[0].type=MAT_TYPE_OTHER;
 	__memory_mat->block[1].addr=__memory_mat->memsize;
 	__memory_mat->block[1].len=0;
-	__memory_mat->block[1].task=0;
+	__memory_mat->block[1].proc=0;
 	__memory_mat->block[1].type=MAT_TYPE_END;
 	
 	for(i=0;i<SMAP_COUNT-1;i++)
@@ -373,7 +373,7 @@ u8 matbuild()
 	if(i>=__memory_mat->count)return 0;
 	insdata.addr=0x100000;
 	insdata.len=sizeof(struct mat)+sizeof(struct mat_block)*(__memory_mat->maxcount);
-	insdata.task=0;
+	insdata.proc=0;
 	insdata.type=MAT_TYPE_USED;
 	if(matinsert(i,&insdata)==-1)return 0;
 
@@ -382,7 +382,7 @@ u8 matbuild()
 	if(i>=__memory_mat->count)return 0;
 	insdata.addr=0x80000;
 	insdata.len=0x1000*2+512*16*8;
-	insdata.task=0;
+	insdata.proc=0;
 	insdata.type=MAT_TYPE_USED;
 	if(matinsert(i,&insdata)==-1)return 0;
 

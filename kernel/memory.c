@@ -59,13 +59,13 @@ s64 kmalloc_find(size_t size,size_t align,void **ret_start)
 	for(i=0;i<__memory_mat->count-1;i++)
 	{
 		void *start=__memory_mat->block[i].addr+__memory_mat->block[i].len;
-		if(((size_t)start%4096)&&__memory_mat->block[i].task!=0)
+		if(((size_t)start%4096)&&__memory_mat->block[i].proc!=0)
 			start=((size_t)start+4095)/4096*4096;
 		start=(((size_t)start-1)/align+1)*align;
 		void *end=__memory_mat->block[i+1].addr;
 		if(((size_t)end%4096)&&
 			__memory_mat->block[i+1].type!=MAT_TYPE_END&&
-			__memory_mat->block[i+1].task!=0)
+			__memory_mat->block[i+1].proc!=0)
 			end=(size_t)end/4096*4096;
 		if(start>=end)continue;
 		if(end-start<size)continue;
@@ -98,7 +98,7 @@ void* kmalloc_align(size_t size,size_t align)
 		struct mat_block blockdata;
 		blockdata.addr=__memory_mat;
 		blockdata.len=newsize;
-		blockdata.task=0;
+		blockdata.proc=0;
 		blockdata.type=MAT_TYPE_USED;
 		if(matinsert(newblock,&blockdata)==-1)return NULL;
 		
@@ -112,7 +112,7 @@ void* kmalloc_align(size_t size,size_t align)
 	struct mat_block data;
 	data.addr=start;
 	data.len=size;
-	data.task=0;
+	data.proc=0;
 	data.type=MAT_TYPE_USED;
 	
 	if(matinsert(block,&data)==-1)return NULL;
