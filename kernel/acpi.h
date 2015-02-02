@@ -75,7 +75,7 @@ struct madt_entry_x2apic{
 	u32 en:1;
 	u32 reserved1:31;
 	u32 acpi_uid;
-};
+}__attribute__((packed));
 
 extern u8 initacpi();
 extern struct acpi_sdt_header* acpifindsdt(u32 sign);
