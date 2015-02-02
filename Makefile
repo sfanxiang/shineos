@@ -7,7 +7,7 @@ export LD16_2 = -L/usr/lib/bcc/ -lc
 export AS64 = x86_64-unknown-linux-gnu-as
 export CC64 = x86_64-unknown-linux-gnu-gcc -c -ffreestanding -fno-stack-protector -fPIC -fvisibility=hidden -mno-mmx -mno-red-zone -mno-sse -mno-sse2 -O2
 export LD64 = x86_64-unknown-linux-gnu-gcc -nostdlib -Wl,--oformat=binary
-export CPPCUR = g++ -O2
+export CXXCUR = g++ -O2
 
 all:_clean _boot _config _kernel _tools _fs _images
 
