@@ -70,7 +70,6 @@ u8 initpaging()
 	pagetable=buildpaging();
 	if(!pagetable)return 0;
 	setpaging(pagetable);
-	kfree(0x80000);
 	return 1;
 }
 
