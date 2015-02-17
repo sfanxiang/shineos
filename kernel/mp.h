@@ -10,6 +10,7 @@
 #include "misc.h"
 
 extern u32 initmp();
+extern u32 getprocessorcount();
 
 #endif
 

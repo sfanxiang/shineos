@@ -29,5 +29,10 @@ void kmain(struct mat* mat)
 	if(!initmp())
 		error("Failed initializing multiprocessor.",0);
 
+	char buf[20];
+	puts("Initialized ");
+	puts(itoa(getprocessorcount(),buf,10));
+	puts(" processors.\n");
+
 	for(;;);
 }

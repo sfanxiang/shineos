@@ -1,5 +1,4 @@
 #include "apic.h"
-#include "display.h"	//temporary
 
 u64 apicread(u32 reg)
 {
@@ -23,7 +22,6 @@ void int_spurious(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode
 
 void int_timer(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode)
 {
-	puts("int");
 	sendeoi();
 }
 
