@@ -1,2 +1,2 @@
 #!/bin/sh
-qemu-system-x86_64 -drive file=output/images/hd0,if=none,id=sata0,format=raw -device ich9-ahci,id=ahci -device ide-drive,drive=sata0,bus=ahci.0 -monitor stdio -s -vnc 127.0.0.1:1 $*
+qemu-system-x86_64 -drive file=output/images/hd0,if=none,id=sata0,format=raw -device ich9-ahci,id=ahci -device ide-drive,drive=sata0,bus=ahci.0 -monitor stdio -s -smp 8 -vnc 127.0.0.1:1 $*
