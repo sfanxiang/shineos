@@ -1,2 +1,2 @@
 #!/bin/sh
-kvm -drive file=output/images/hd0,if=none,id=sata0,format=raw -device ich9-ahci,id=ahci -device ide-drive,drive=sata0,bus=ahci.0 -monitor stdio -s -smp 8 $*
+kvm -drive file=output/images/hd0,if=none,id=sata0,format=raw -device ich9-ahci,id=ahci -device ide-drive,drive=sata0,bus=ahci.0 -m 256M -monitor stdio -s -smp 8 $*

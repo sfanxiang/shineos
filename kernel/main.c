@@ -1,33 +1,20 @@
 #include "apic.h"
 #include "interrupt.h"
+#include "misc.h"
 #include "mp.h"
 #include "paging.h"
 
-void error(char *msg,u8 halt)
+void kmain()
 {
-	puts("Error:\n");
-	puts(msg);
-	putchar('\n');
-	if(halt)
-	{
-		puts("Stopped.\n");
-		haltcpu();
-	}
-}
-
-void kmain(struct mat* mat)
-{
-	setmat(mat);
 	if(!initpaging())
 		error("Failed initializing paging.",1);
-	if(!initinterrupt())
+	if(!initinterrupt(0))
 		error("Failed initializing interrupt.",1);
-	if(!initapic())
+	if(!initapic(0))
 		error("Failed initializing APIC.",1);
 	if(!initacpi())
 		error("Failed initializing ACPI.",1);
-	if(!initmp())
-		error("Failed initializing multiprocessor.",0);
+	initmp();
 
 	char buf[20];
 	puts("Initialized ");

@@ -25,14 +25,14 @@ void int_timer(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode)
 	sendeoi();
 }
 
-u8 initapic()
+u8 initapic(u32 processor)
 {
 	struct apic_base base;
 	*((u64*)(&base))=readmsr(APIC_BASE_MSR);
 	base.enable_x2apic=base.enable_global=1;
 	writemsr(APIC_BASE_MSR,*((u64*)(&base)));
 
-	if(!registerinterrupt(0x7f,int_spurious,0))
+	if(!registerinterrupt(0x7f,processor,int_spurious,0))
 		return 0;
 
 	struct apic_spurious spurious;
@@ -41,7 +41,7 @@ u8 initapic()
 	spurious.vector=0x7f;
 	apicwrite(APIC_REG_SPURIOUS,*((u32*)(&spurious)));
 
-	if(!registerinterrupt(0x81,int_timer,0))
+	if(!registerinterrupt(0x81,processor,int_timer,0))
 		return 0;
 
 	struct apic_lvt lvt;

@@ -7,3 +7,20 @@ u8 checksum(u8* start,u8* end)
 		sum+=*start;
 	return (sum==0);
 }
+
+void message(char *msg)
+{
+	puts(msg);
+	putchar('\n');
+}
+
+void error(char *msg,u8 halt)
+{
+	message("error");
+	message(msg);
+	if(halt)
+	{
+		message("stopped");
+		haltcpu();
+	}
+}

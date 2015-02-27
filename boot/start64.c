@@ -130,10 +130,10 @@ void main()
 				free(ksize);
 				continue;
 			}
-			
-			void *kernel=calloc_align(1,*((size_t*)ksize),4096);
-			if(!kernel)error("Cannot allocate memory for kernel.",1);
+
+			void *kernel=calloc_align(1,*(size_t*)ksize,4096);
 			free(ksize);
+			if(!kernel)error("Cannot allocate memory for kernel.",1);
 			
 			if(!readfile(i,part,pfile,0x7fffffff,blocksize,
 			             kernel,NULL,NULL))
@@ -147,7 +147,7 @@ void main()
 			}
 			
 			drivestop();
-			((void(*)(struct mat*))(kernel+sizeof(size_t)))(__memory_mat);
+			((void(*)())(kernel+sizeof(size_t)))();
 		}
 	}
 

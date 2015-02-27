@@ -3,9 +3,6 @@
 %include "drive.inc"
 %include "std.inc"
 
-@@
-;enable @f
-
 label_code0:
 	jmp short label_code0_start
 	nop

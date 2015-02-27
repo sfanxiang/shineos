@@ -7,14 +7,39 @@ org 0x7c00
 %define SEL_CODE64 (gdt_code64-gdt)
 %define SEL_DATA64 (gdt_data64-gdt)
 
+align 1
+
 bits 16
 start:
 	jmp 0:real
 
 disksign dd 0x12345678
 diskpart db 0
-bspflg db 1
-startflg db 0
+mat dq 0
+
+gdt:
+gdt_null:
+	dq 0
+gdt_code32:
+	dq 0x00c09a00000000ff
+gdt_data32:
+	dq 0x00c09200000000ff
+gdt_code64:
+	dq 0x00209a0000000000
+gdt_data64:
+	dq 0x0020920000000000
+gdt_code64_user:
+	dq 0x0020fa0000000000
+gdt_data64_user:
+	dq 0x0020f20000000000
+
+gdt_ptr:
+	dw $-gdt-1
+	dd gdt
+
+idt_ptr:
+	dw 0
+	dd 0
 
 real:
 	mov ax,cs
@@ -22,17 +47,6 @@ real:
 	mov es,ax
 	mov ss,ax
 	mov sp,start
-	
-	cmp byte [cs:bspflg],0
-	jnz bsp
-	mov byte [cs:startflg],1
-	cli
-stop:
-	hlt	;todo
-	jmp stop
-
-bsp:
-	mov byte [cs:bspflg],0
 
 	mov ah,0
 	int 0x13
@@ -101,42 +115,18 @@ getmemorymap:
 	out 0xa1,al
 	out 0x21,al
 
-	lgdt [gdt_ptr]
-	lidt [idt_ptr]
-
 	in al,0x92
 	or al,2
 	out 0x92,al
+
+	lgdt [cs:gdt_ptr]
+	lidt [cs:idt_ptr]
 
 	mov eax,cr0
 	or eax,1
 	mov cr0,eax
 	
 	jmp dword SEL_CODE32:protected
-
-gdt:
-gdt_null:
-	dq 0
-gdt_code32:
-	dq 0x00c09a00000000ff
-gdt_data32:
-	dq 0x00c09200000000ff
-gdt_code64:
-	dq 0x00209a0000000000
-gdt_data64:
-	dq 0x0020920000000000
-gdt_code64_user:
-	dq 0x0020fa0000000000
-gdt_data64_user:
-	dq 0x0020f20000000000
-
-gdt_ptr:
-	dw $-gdt-1
-	dd gdt
-
-idt_ptr:
-	dw 0
-	dd 0
 
 bits 32
 protected:

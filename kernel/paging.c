@@ -1,8 +1,8 @@
 #include "paging.h"
 
-u64* buildpaging()
+u64* buildpagetable()
 {
-	size_t memsize=getmat()->memsize;
+	size_t memsize=MEMORY_MAT->memsize;
 	u64 *p0,*p1,*p2,*p3;
 	u64 c0,c1,c2,c3;
 	u64 e0,e1,e2,e3;
@@ -63,19 +63,30 @@ u64* buildpaging()
 	return p0;
 }
 
-u64 *pagetable;
+u64 *pagetable[255];
+
+u64* getpagetable(u32 n)
+{
+	return pagetable[n];
+}
+
+void setpagetable(u64 *ptr,u32 n)
+{
+	pagetable[n]=ptr;
+}
 
 u8 initpaging()
 {
-	pagetable=buildpaging();
-	if(!pagetable)return 0;
-	setpaging(pagetable);
+	pagetable[0]=buildpagetable();
+	if(!pagetable[0])return 0;
+	setpaging(pagetable[0]);
+	kfree(0x80000);
 	return 1;
 }
 
-u64* getpageentry(void *addr)
+u64* getpageentry(void *addr,u32 n)
 {
-	return (((u64*)((*(((u64*)((*(((u64*)((*(pagetable
+	return (((u64*)((*(((u64*)((*(((u64*)((*(pagetable[n]
 		+(((size_t)addr>>39)&0x1ff)))&(~0xfffL)))
 		+(((size_t)addr>>30)&0x1ff)))&(~0xfffL)))
 		+(((size_t)addr>>21)&0x1ff)))&(~0xfffL)))

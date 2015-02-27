@@ -26,13 +26,14 @@ struct idt_ptr{
 #define INTERRUPT_ATTR 0x8e
 
 extern void loadidt(struct idt_ptr *idtr);
-extern u8 registerinterrupt(u16 num,void(*handler)
+extern u8 buildinterrupt(u16 count,u32 processor);
+extern u8 registerinterrupt(u16 num,u32 processor,void(*handler)
                             (u16 num,u16 ss,u64 rsp,u64 rflags,
                              u16 cs,u64 rip,u64 errorcode),u8 haveerrcode);
-extern u8 unregisterinterrupt(u16 num);
-extern u8 isinterruptregistered(u16 num);
+extern u8 unregisterinterrupt(u16 num,u32 processor);
+extern u8 isinterruptregistered(u16 num,u32 processor);
 extern void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode);
-extern u8 initinterrupt();
+extern u8 initinterrupt(u32 processor);
 
 #endif
 

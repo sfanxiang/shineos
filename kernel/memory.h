@@ -4,6 +4,7 @@
 #ifdef __x86_64__
 
 #include "defines.h"
+#include "mp.h"
 
 #define SEL_CODE 24
 #define SEL_DATA 32
@@ -29,6 +30,8 @@ struct smap_entry{
 #define SMAP_TYPE_ACPI_REC 3
 #define SMAP_TYPE_ACPI_NVS 4
 #define SMAP_TYPE_BAD 5
+
+#define MEMORY_MAT (*((volatile struct mat**)0x7c0a))
 
 #pragma pack(push,1)
 
@@ -57,8 +60,6 @@ extern void* kmalloc(size_t size);
 extern void* kcalloc_align(size_t num,size_t size,size_t align);
 extern void* kcalloc(size_t num,size_t size);
 extern void kfree(void* ptr);
-extern struct mat* getmat();
-extern void setmat(struct mat* mat);
 
 #include "paging.h"
 

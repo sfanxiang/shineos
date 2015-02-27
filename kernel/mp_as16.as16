@@ -1,0 +1,85 @@
+%define SEL_CODE32 0x8
+%define SEL_DATA32 0x10
+%define SEL_CODE64 0x18
+%define SEL_DATA64 0x20
+
+%define GDT_PTR 0x7c4a
+%define IDT_PTR 0x7c50
+
+%define ABSADDR(x) (x-$$+0x8000)
+
+align 1
+bits 16
+
+apstart:
+	jmp short real
+
+page_table dq 0
+apmain dq 0
+dw SEL_CODE64
+processor dd 0
+ap_start db 0
+ap_ready db 0
+stack dq 0
+
+real:
+	cli
+	mov ax,cs
+	mov ds,ax
+	mov es,ax
+	mov ss,ax
+	mov sp,0x7c00
+
+	mov byte [cs:ABSADDR(ap_ready)],0
+	mov byte [cs:ABSADDR(ap_start)],1
+
+	lgdt [cs:GDT_PTR]
+	lidt [cs:IDT_PTR]
+
+	mov eax,cr0
+	or eax,1
+	mov cr0,eax
+
+	jmp dword SEL_CODE32:ABSADDR(protected)
+
+bits 32
+protected:
+	mov ax,SEL_DATA32
+	mov ds,ax
+	mov ss,ax
+	mov esp,0x7c00
+
+	mov eax,[ABSADDR(page_table)]
+	mov cr3,eax
+
+	mov eax,cr4
+	or eax,10100000b
+	mov cr4,eax
+	
+	mov ecx,0xc0000080
+	rdmsr
+	or eax,0x100
+	wrmsr
+	
+	mov eax,cr0
+	or eax,0x80000000
+	mov cr0,eax
+
+	jmp SEL_CODE64:ABSADDR(long_start)
+
+bits 64
+long_start:
+	mov rsp,[ABSADDR(stack)]
+	jmp [ABSADDR(apmain)]
+
+apstart_end:
+
+global getapstartptr
+getapstartptr:
+	lea rax,[rel apstart]
+	ret
+
+global getapstartlen
+getapstartlen:
+	mov rax,apstart_end-apstart
+	ret
