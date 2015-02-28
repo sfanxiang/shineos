@@ -16,7 +16,7 @@ void message(char *msg)
 
 void error(char *msg,u8 halt)
 {
-	message("error");
+	message("Error:");
 	message(msg);
 	if(halt)
 	{

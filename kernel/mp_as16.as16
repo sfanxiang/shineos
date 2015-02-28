@@ -16,7 +16,6 @@ apstart:
 
 page_table dq 0
 apmain dq 0
-dw SEL_CODE64
 processor dd 0
 ap_start db 0
 ap_ready db 0

@@ -14,10 +14,10 @@
 
 #define MP_AP_PAGETABLE (*(volatile u64**)(MP_APSTART_ADDR+2))
 #define MP_AP_APMAIN (*(volatile u64**)(MP_APSTART_ADDR+0xa))
-#define MP_AP_PROCESSOR (*(volatile u32*)(MP_APSTART_ADDR+0x14))
-#define MP_AP_START (*(volatile u8*)(MP_APSTART_ADDR+0x18))
-#define MP_AP_READY (*(volatile u8*)(MP_APSTART_ADDR+0x19))
-#define MP_AP_STACK (*(volatile void**)(MP_APSTART_ADDR+0x1a))
+#define MP_AP_PROCESSOR (*(volatile u32*)(MP_APSTART_ADDR+0x12))
+#define MP_AP_START (*(volatile u8*)(MP_APSTART_ADDR+0x16))
+#define MP_AP_READY (*(volatile u8*)(MP_APSTART_ADDR+0x17))
+#define MP_AP_STACK (*(volatile void**)(MP_APSTART_ADDR+0x18))
 
 extern void* getapstartptr();
 extern size_t getapstartlen();
