@@ -89,6 +89,7 @@ void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 error
 	puts("\nStopped.\n");
 
 	//todo: broadcast exception
+	disable_int();
 	haltcpu();
 }
 

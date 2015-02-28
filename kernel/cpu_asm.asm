@@ -5,10 +5,8 @@
 
 .globl haltcpu
 haltcpu:
-	cli
-haltcpu_loop:   
 	hlt
-	jmp haltcpu_loop
+	jmp haltcpu
 
 .globl enable_int
 enable_int:

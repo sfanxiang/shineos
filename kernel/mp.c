@@ -111,5 +111,5 @@ void apmain()
 	initapic(processor);
 
 	MP_AP_READY=1;
-	for(;;);
+	haltcpu();
 }

@@ -12,7 +12,7 @@ extern u64 readmsr(u32 reg);
 extern void writemsr(u32 reg,u64 num);
 extern u64 getcpuflags();
 
-#define CPU_FLAGS_IF (1<<9)
+#define CPU_FLAGS_IF (((u64)1)<<9)
 
 #endif
 

@@ -21,6 +21,7 @@ void error(char *msg,u8 halt)
 	if(halt)
 	{
 		message("stopped");
+		disable_int();
 		haltcpu();
 	}
 }

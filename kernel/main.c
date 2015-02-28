@@ -21,5 +21,5 @@ void kmain()
 	puts(itoa(getprocessorcount(),buf,10));
 	puts(" processors.\n");
 
-	for(;;);
+	haltcpu();
 }
