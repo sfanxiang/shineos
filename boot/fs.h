@@ -21,6 +21,12 @@
 #pragma pack(push,1)
 #endif
 
+#define PARTENTRY_BEGIN ((pfar)(0x7dbeL))
+#define PARTENTRY_END ((pfar)(0x7dfeL))
+
+#define PARTENTRY_STATUS_ACTIVE 0x80
+#define PARTENTRY_TYPE_SFS 0x60
+
 struct partentry{
 	u8 status;	//0x00:inactive,0x80:active
 	u8 firsthead,firstsector,firstcylinder,type,lasthead,lastsector,lastcylinder;
