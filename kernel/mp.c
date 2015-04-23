@@ -59,7 +59,11 @@ u32 initmp()
 				apicwrite(APIC_REG_ICR,*(u64*)&icr);
 
 				u16 i;
-				for(i=0;i<25000;i++)inb(0x70);
+				for(i=0;i<25000;i++)
+				{
+					if(MP_AP_START)break;
+					inb(0x70);
+				}
 				
 				if(!MP_AP_START)
 				{
@@ -69,12 +73,20 @@ u32 initmp()
 					icr.destshort=APIC_DESTSHORTHAND_NONE;
 					icr.dest=apic_id;
 					apicwrite(APIC_REG_ICR,*(u64*)&icr);
-					for(i=0;i<500;i++)inb(0x70);
+					for(i=0;i<500;i++)
+					{
+						if(MP_AP_START)break;
+						inb(0x70);
+					}
 					
 					if(!MP_AP_START)
 					{
 						apicwrite(APIC_REG_ICR,*(u64*)&icr);
-						for(i=0;i<1000;i++)inb(0x70);
+						for(i=0;i<1000;i++)
+						{
+							if(MP_AP_START)break;
+							inb(0x70);
+						}
 					}
 				}
 
