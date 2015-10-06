@@ -135,13 +135,19 @@ protected:
 	mov ss,ax
 	mov esp,start
 
-	mov dword [0x80000],0x81000|3
-	mov dword [0x80000+4],0
-	
-	mov eax,0x82000|3
+	mov dword [0x50000],0x53000|3
+	mov dword [0x50000+4],0
+	mov dword [0x50000+8],0x51000|3
+	mov dword [0x50000+12],0
+	mov dword [0x51000],0x52000|3
+	mov dword [0x51000+4],0
+	mov dword [0x52000],0
+	mov dword [0x52000+4],0
+
+	mov eax,0x54000|3
 	xor edx,edx
-	mov edi,0x81000
-	mov ecx,16
+	mov edi,0x53000
+	mov ecx,64
 @@
 	mov [edi],eax
 	mov [edi+4],edx
@@ -151,8 +157,8 @@ protected:
 	
 	mov eax,0x83
 	xor edx,edx
-	mov edi,0x82000
-	mov ecx,512*16
+	mov edi,0x54000
+	mov ecx,512*64
 @@
 	mov [edi],eax
 	mov [edi+4],edx
@@ -161,7 +167,7 @@ protected:
 	add edi,8
 	loop @b
 	
-	mov eax,0x80000
+	mov eax,0x50000
 	mov cr3,eax
 	
 	mov eax,cr4

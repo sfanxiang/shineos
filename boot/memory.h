@@ -258,7 +258,7 @@ void* calloc_align(size_t num,size_t size,size_t align)
 {
 	void *addr=malloc_align(size*num,align);
 	if(!addr)return NULL;
-	memset(addr,0,sizeof(addr));
+	memset(addr,0,size);
 	return addr;
 }
 

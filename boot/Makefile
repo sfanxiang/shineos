@@ -19,17 +19,17 @@ $(OUTPUT)/boot/start16:start16.asm
 $(OUTPUT)/boot/start64:link.ld $(OUTPUT)/boot/crt0.o $(OUTPUT)/boot/start64.o $(OUTPUT)/boot/display.o $(OUTPUT)/boot/string.o $(OUTPUT)/boot/io.o	
 	$(LD64) -T link.ld -o $@ $^
 
-$(OUTPUT)/boot/crt0.o:crt0.asm
+$(OUTPUT)/boot/crt0.o:crt0.S
 	$(AS64) -o $@ $<
 
 $(OUTPUT)/boot/start64.o:start64.c ahci.h ata.h defines.h drive.h display.h fs.h io.h memory.h pci.h string.h
 	$(CC64) -o $@ $<
 
-$(OUTPUT)/boot/display.o:display.asm
+$(OUTPUT)/boot/display.o:display.S
 	$(AS64) -o $@ $<
 
-$(OUTPUT)/boot/string.o:string.asm
+$(OUTPUT)/boot/string.o:string.S
 	$(AS64) -o $@ $<
 
-$(OUTPUT)/boot/io.o:io.asm
+$(OUTPUT)/boot/io.o:io.S
 	$(AS64) -o $@ $<

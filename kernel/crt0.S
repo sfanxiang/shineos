@@ -5,9 +5,10 @@
 
 .extern _end
 
-.globl kernel_size
+.globl kernel_size,kernel_start
+kernel_start:
 kernel_size:
-	.quad _end-kernel_size
+	.quad _end-kernel_start
 
 .globl _start
 _start:

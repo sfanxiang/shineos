@@ -13,3 +13,8 @@ invlpaging:
 	mov rax,cr3
 	mov cr3,rax
 	ret
+
+.globl getcurpagetable
+getcurpagetable:
+	mov rax,cr3
+	ret

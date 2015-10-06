@@ -9,12 +9,12 @@ extern size_t getinthandler_base_size();
 
 u8 buildinterrupt(u16 count,u32 processor)
 {
-	idtr[processor]=kmalloc(sizeof(struct idt_ptr));
+	idtr[processor]=malloc(processor,sizeof(struct idt_ptr));
 	if(!idtr[processor])return 0;
-	idtr[processor]->base=kcalloc(count,sizeof(struct idt_desc));
+	idtr[processor]->base=calloc(processor,count,sizeof(struct idt_desc));
 	if(!(idtr[processor]->base))
 	{
-		kfree(idtr[processor]);
+		free(processor,idtr[processor]);
 		idtr[processor]=NULL;
 		return 0;
 	}
@@ -26,19 +26,19 @@ u8 buildinterrupt(u16 count,u32 processor)
 
 u8 registerinterrupt(u16 num,u32 processor,void(*handler)
                      (u16 num,u16 ss,u64 rsp,u64 rflags,
-                      u16 cs,u64 rip,u64 errorcode),u8 haveerrcode)
+                      u16 cs,u64 rip,u64 errorcode),u8 haserrcode)
 {
 	if(!idtr[processor]||!(idtr[processor]->base))return 0;
 	if((idtr[processor]->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if(isinterruptregistered(num,processor))return 0;
 	
-	void* handler_base=kmalloc(getinthandler_base_size());
+	void* handler_base=malloc(processor,getinthandler_base_size());
 	if(!handler_base)return 0;
 
 	memcpy(handler_base,getinthandler_base(),getinthandler_base_size());
 	*((size_t*)(handler_base))=(size_t)handler;
 	*((u16*)(handler_base+8))=num;
-	*((u8*)(handler_base+8+2))=haveerrcode;
+	*((u8*)(handler_base+8+2))=haserrcode;
 
 	(idtr[processor]->base+num)->sel=SEL_CODE;
 	(idtr[processor]->base+num)->zero0=0;
@@ -56,7 +56,7 @@ u8 unregisterinterrupt(u16 num,u32 processor)
 	if((idtr[processor]->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if(!isinterruptregistered(num,processor))return 0;
 
-	kfree(((size_t)((idtr[processor]->base+num)->off_hi))<<16+(idtr[processor]->base+num)->off_lo-8-2-1);
+	free(processor,((size_t)((idtr[processor]->base+num)->off_hi))<<16+(idtr[processor]->base+num)->off_lo-8-2-1);
 	memset(idtr[processor]->base+num,0,sizeof(struct idt_desc));
 	return 1;
 }

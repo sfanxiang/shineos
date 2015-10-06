@@ -12,7 +12,7 @@ typedef signed int s32;
 typedef unsigned long u64;
 typedef signed long s64;
 
-typedef u64 size_t;
+typedef s64 size_t;
 
 #define NULL ((void*)0)
 

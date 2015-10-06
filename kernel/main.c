@@ -1,3 +1,4 @@
+#include "pmm.h"
 #include "apic.h"
 #include "interrupt.h"
 #include "misc.h"
@@ -6,8 +7,11 @@
 
 void kmain()
 {
-	if(!initpaging())
-		error("Failed initializing paging.",1);
+	if(!pmm_init())
+		error("Failed initializing PMM.",1);
+	if(!vmm_init(0))
+		error("Failed initializing VMM.",1);
+	initmemory(0);
 	if(!initinterrupt(0))
 		error("Failed initializing interrupt.",1);
 	if(!initapic(0))
@@ -19,7 +23,7 @@ void kmain()
 	char buf[20];
 	puts("Initialized ");
 	puts(itoa(getprocessorcount(),buf,10));
-	puts(" processors.\n");
+	puts(" processor(s).\n");
 
 	haltcpu();
 }

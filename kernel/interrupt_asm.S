@@ -13,10 +13,10 @@ inthandler_base_handler:
 	.quad 0
 inthandler_base_num:
 	.word 0
-inthandler_base_haveerrcode:
+inthandler_base_haserrcode:
 	.byte 0
 inthandler_base_code:
-	cmp byte ptr inthandler_base_haveerrcode[rip],0
+	cmp byte ptr inthandler_base_haserrcode[rip],0
 	jne inthandler_base_skiperrcode
 	pushq 0
 inthandler_base_skiperrcode:

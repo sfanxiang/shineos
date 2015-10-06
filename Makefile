@@ -4,7 +4,7 @@ export AS16 = nasm
 export CC16 = bcc -ansi -c -O
 export LD16_1 = ld86 -d
 export LD16_2 = -L/usr/lib/bcc/ -lc
-export AS64 = x86_64-unknown-linux-gnu-as
+export AS64 = x86_64-unknown-linux-gnu-gcc -c -ffreestanding
 export CC64 = x86_64-unknown-linux-gnu-gcc -c -ffreestanding -fno-stack-protector -fPIC -fvisibility=hidden -mno-mmx -mno-red-zone -mno-sse -mno-sse2 -O2
 export LD64 = x86_64-unknown-linux-gnu-gcc -nostdlib -Wl,--oformat=binary
 export CXXCUR = g++ -O2

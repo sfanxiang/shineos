@@ -1,154 +1,140 @@
 #include "memory.h"
 
-s64 matfind(void *addr)
-{
-	if(!MEMORY_MAT)return -1;
-	u64 i;
-	for(i=0;i<MEMORY_MAT->count;i++)
-	{
-		if(MEMORY_MAT->block[i].addr==addr)
-			return i;
-		if(MEMORY_MAT->block[i].addr>addr)
-			return -1;
+memory_header base[255];
+memory_header* freep[255];
+
+int alloc_block(int n,memory_header* h){
+	size_t p=h+1;
+	p=GET_PAGE(p+4095);
+	size_t op=p;
+	for(;p<((size_t)h)+h->size;p+=4096){
+		if(vm_getphypage(n,p)!=NULL){
+			char str[30];
+			puts("memory.c: warning: page already has physical address: ");
+			puts(itoa(p,str,16));
+			putchar('\n');
+			op=p+4096;
+			continue;
+		}
+		size_t newpage=pmm_alloc();
+		if(newpage==NULL){
+			for(;op<p;op+=4096){
+				pmm_free(vm_getphypage(n,op));
+				vm_unmap(n,op);
+			}
+			return 0;
+		}
+		if(vm_map(n,p,newpage)==NULL){
+			for(;op<=p;op+=4096){
+				pmm_free(vm_getphypage(n,op));
+				vm_unmap(n,op);
+			}
+			return 0;
+		}
 	}
-	return -1;
-}
-
-s64 matinsert(u64 block,struct mat_block *data)
-{
-	if(!MEMORY_MAT)return -1;
-	if(!data)return -1;
-	if(block>=MEMORY_MAT->count||block==0)return -1;
-	if(MEMORY_MAT->block[block-1].addr+MEMORY_MAT->block[block-1].len
-	   >data->addr)return -1;
-	if(MEMORY_MAT->block[block].addr<data->addr+data->len)return -1;
-	if(data->addr>=MEMORY_MAT->memsize||data->len>MEMORY_MAT->memsize)return -1;
-	if(data->len==0)return -1;
-
-	u64 i;
-	for(i=MEMORY_MAT->count-1;i>=block;i--)
-		memcpy(&(MEMORY_MAT->block[i+1]),&(MEMORY_MAT->block[i]),sizeof(struct mat_block));
-
-	memcpy(&(MEMORY_MAT->block[block]),data,sizeof(struct mat_block));
-	MEMORY_MAT->count++;
-	
-	return block;
-}
-
-u8 matremove(u64 block)
-{
-	if(!MEMORY_MAT)return 0;
-	if(block>=MEMORY_MAT->count-1||block==0)return 0;
-
-	u64 i;
-	for(i=block+1;i<MEMORY_MAT->count;i++)
-		memcpy(&(MEMORY_MAT->block[i-1]),&(MEMORY_MAT->block[i]),sizeof(struct mat_block));
-
-	MEMORY_MAT->count--;
 	return 1;
 }
 
-s64 kmalloc_find(size_t size,size_t align,void **ret_start)
-{
-	if(size==0)return -1;
-	if(align==0)return -1;
+void *malloc(int n,size_t bytes){
+	if(bytes==0)return NULL;
 
-	u64 i;
-	for(i=0;i<MEMORY_MAT->count-1;i++)
-	{
-		void *start=MEMORY_MAT->block[i].addr+MEMORY_MAT->block[i].len;
-		if(((size_t)start%4096)&&MEMORY_MAT->block[i].proc!=0)
-			start=((size_t)start+4095)/4096*4096;
-		start=(((size_t)start-1)/align+1)*align;
-		void *end=MEMORY_MAT->block[i+1].addr;
-		if(((size_t)end%4096)&&
-			MEMORY_MAT->block[i+1].type!=MAT_TYPE_END&&
-			MEMORY_MAT->block[i+1].proc!=0)
-			end=(size_t)end/4096*4096;
-		if(start>=end)continue;
-		if(end-start<size)continue;
-		if(ret_start)*ret_start=start;
-		return i+1;
-	}
-}
+	size_t alloc=bytes+sizeof(memory_header);
+	alloc=((alloc-1)/sizeof(memory_header)+1)*sizeof(memory_header);
 
-void* kmalloc_align(size_t size,size_t align)
-{
-	if(MEMORY_MAT->count>=MEMORY_MAT->maxcount)
-	{
-		struct mat *prevmat=MEMORY_MAT;
-		u64 newcount=prevmat->count*3/2;
-		size_t newsize=sizeof(struct mat)
-		                  +sizeof(struct mat_block)*newcount;
-		s64 newblock=kmalloc_find(newsize,8,&MEMORY_MAT);
-		if(newblock==-1)
-		{
-			newcount=prevmat->count+2;
-			newsize=sizeof(struct mat)+sizeof(struct mat_block)*newcount;
-			newblock=kmalloc_find(newsize,8,&MEMORY_MAT);
-			if(newblock==-1)return NULL;
+	memory_header *p,*prevp=freep[n];
+	for(p=prevp->ptr;;prevp=p,p=p->ptr){
+		if(p->size>alloc){
+			size_t orgsize=p->size;
+			p->size=alloc+sizeof(memory_header);
+			if(alloc_block(n,p)){
+				p->size-=sizeof(memory_header);
+				prevp->ptr=(memory_header*)(((void*)p)+alloc);
+				((memory_header*)(((void*)p)+alloc))->size=orgsize-alloc;
+				((memory_header*)(((void*)p)+alloc))->ptr=p->ptr;
+				freep[n]=((memory_header*)(((void*)p)+alloc));
+				return (void*)(p+1);
+			}else{
+				p->size=orgsize;
+			}
+		}else if(p->size==alloc){
+			if(((void*)p)+p->size<=VM_KERNEL*2){
+				if(alloc_block(n,p)){
+					prevp->ptr=p->ptr;
+					freep[n]=prevp;
+					return (void*)(p+1);
+				}
+			}
 		}
-
-		memcpy(MEMORY_MAT,prevmat,sizeof(struct mat)
-		       +sizeof(struct mat_block)*(prevmat->count));
-		MEMORY_MAT->maxcount=newcount;
-		
-		struct mat_block blockdata;
-		blockdata.addr=MEMORY_MAT;
-		blockdata.len=newsize;
-		blockdata.proc=0;
-		blockdata.type=MAT_TYPE_USED;
-		if(matinsert(newblock,&blockdata)==-1)return NULL;
-		
-		kfree(prevmat);
+		if(p==freep[n])return NULL;
 	}
+}
 
-	void *start;
-	s64 block=kmalloc_find(size,align,&start);
-	if(block==-1)return NULL;
+void *calloc(int n,size_t nmemb, size_t size){
+	size_t s=nmemb*size;
+	if(s==0)return NULL;
+	void *ptr=malloc(n,s);
+	if(ptr==NULL)
+		return NULL;
+	else{
+		memset(ptr,0,s);
+		return ptr;
+	}
+}
 
-	struct mat_block data;
-	data.addr=start;
-	data.len=size;
-	data.proc=0;
-	data.type=MAT_TYPE_USED;
+void free_block(int n,memory_header *h){
+	size_t p=h+1;
+	p=(p+4095)/4096*4096;
+	for(;p<((size_t)h)+h->size-4095;p+=4096){
+		pmm_free(vm_getphypage(n,p));
+		vm_unmap(n,p);
+	}
+}
+
+void free(int n,void *pt){
+	if(pt==NULL)return;
 	
-	if(matinsert(block,&data)==-1)return NULL;
-	return start;
-}
+	memory_header *h=pt;
+	h--;
 
-void* kmalloc(size_t size)
-{
-	return kmalloc_align(size,1);
-}
-
-void* kcalloc_align(size_t num,size_t size,size_t align)
-{
-	void *addr=kmalloc_align(size*num,align);
-	if(!addr)return NULL;
-	memset(addr,0,size*num);
-	return addr;
-}
-
-void* kcalloc(size_t num,size_t size)
-{
-	return kcalloc_align(num,size,1);
-}
-
-void kfree(void* ptr)
-{
-	s64 block=matfind(ptr);
-	if(block==-1)return;
-	if(MEMORY_MAT->block[block].type!=MAT_TYPE_USED)return;
-	matremove(block);
-
-	u64 maxcount=MEMORY_MAT->count*3/2;
-	if(MEMORY_MAT->maxcount>maxcount)
-	{
-		s64 block=matfind(MEMORY_MAT);
-		if(block==-1)return;
-		MEMORY_MAT->block[block].len=sizeof(struct mat)
-			+sizeof(struct mat_block)*maxcount;
-		MEMORY_MAT->maxcount=maxcount;
+	memory_header *p;
+	for(p=freep[n];;p=p->ptr){
+		if(h>p&&h<p->ptr){
+			if(((void*)h)+h->size==p->ptr){
+				size_t size=h->size+p->ptr->size;
+				memory_header *ptr=p->ptr->ptr;
+				if(p->ptr->size>=4096)h->size+=4096;
+				else h->size+=p->ptr->size;
+				free_block(n,h);
+				h->size=size;
+				h->ptr=ptr;
+			}else{
+				h->ptr=p->ptr;
+				free_block(n,h);
+			}
+			if(((void*)p)+p->size==h){
+				size_t size=p->size+h->size;
+				memory_header *ptr=h->ptr;
+				p->size+=sizeof(memory_header);
+				free_block(n,p);
+				p->size=size;
+				p->ptr=ptr;
+			}else{
+				p->ptr=h;
+			}
+			freep[n]=p;
+			break;
+		}
 	}
+}
+
+int initmemory(int n){
+	freep[n]=get_phy_kernel_end()-get_phy_kernel_start()+VM_KERNEL;
+	void *p=pmm_alloc();
+	if(p==NULL)return 0;
+	if(vm_map(n,freep[n],p)==0)return 0;
+	freep[n]->size=0;
+	freep[n]->ptr=freep[n]+1;
+	(freep[n]+1)->size=VM_KERNEL;
+	(freep[n]+1)->ptr=freep[n];
+	return 1;
 }

@@ -14,7 +14,11 @@ u32 initmp()
 
 	memcpy(MP_APSTART_ADDR,getapstartptr(),getapstartlen());
 	MP_AP_APMAIN=&apmain;
-	MP_AP_PAGETABLE=buildpagetable();
+	if(!vmm_init_raw(1)){
+		processor_cnt=1;
+		return 1;
+	}
+	MP_AP_PAGETABLE=getvminfo(1)->pagetable;
 
 	while((void*)madtent<madtend)
 	{
@@ -42,8 +46,8 @@ u32 initmp()
 				
 				MP_AP_START=0;
 				MP_AP_PROCESSOR=processor_cnt-1;
-				MP_AP_STACK=kmalloc(65536);
-				MP_AP_STACK+=65536;
+				MP_AP_STACK=pmm_alloc();
+				MP_AP_STACK+=4096;
 
 				struct apic_icr icr;
 				memset(&icr,0,sizeof(icr));
@@ -93,12 +97,13 @@ u32 initmp()
 				if(MP_AP_START)
 				{
 					while(!MP_AP_READY);
-					MP_AP_PAGETABLE=buildpagetable();
+					if(!vmm_init_raw(processor_cnt))return processor_cnt;
+					MP_AP_PAGETABLE=getvminfo(processor_cnt)->pagetable;
 				}
 				else
 				{
 					processor_cnt--;
-					kfree(MP_AP_STACK);
+					pmm_free(MP_AP_STACK);
 				}
 			}
 		}
@@ -115,10 +120,14 @@ u32 getprocessorcount()
 
 void apmain()
 {
-	u64 *pagetable=MP_AP_PAGETABLE;
 	u32 processor=MP_AP_PROCESSOR;
 
-	setpagetable(pagetable,processor);
+	//todo: error message
+	initmemory(processor);
+	void *stack=malloc(processor,65536);
+	if(stack!=NULL){
+		setstack(MP_AP_STACK,stack+65536,4096);
+	}
 	initinterrupt(processor);
 	initapic(processor);
 
