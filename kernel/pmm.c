@@ -2,7 +2,7 @@
 
 size_t *pmm_init(){
 	size_t memsize=EARLY_MEMORY_MAT->memsize;
-	size_t pt_size=(memsize/4096);
+	size_t pt_size=memsize/4096;
 	size_t *page_stack=early_calloc_align(pt_size,1,4096);
 	if(page_stack==NULL)return NULL;
 	

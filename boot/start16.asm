@@ -137,12 +137,8 @@ protected:
 
 	mov dword [0x50000],0x53000|3
 	mov dword [0x50000+4],0
-	mov dword [0x50000+8],0x51000|3
-	mov dword [0x50000+12],0
 	mov dword [0x51000],0x52000|3
 	mov dword [0x51000+4],0
-	mov dword [0x52000],0
-	mov dword [0x52000+4],0
 
 	mov eax,0x54000|3
 	xor edx,edx

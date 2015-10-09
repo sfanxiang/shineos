@@ -13,7 +13,7 @@
 
 #define PLAIN_PAGE_TABLE 0x50000
 
-#define VM_KERNEL 0x8000000000
+#define VM_KERNEL ((((*PMM_STACK)[1]*4096-1+0x8000000000)/0x8000000000)*0x8000000000)
 #define VM_USER (VM_KERNEL*2)
 
 struct vminfo{
@@ -27,6 +27,8 @@ extern size_t vm_getphypage(int n,size_t vp);
 extern int vmm_init(int n);
 extern int vmm_init_raw(int n);
 extern struct vminfo *getvminfo(int n);
+extern int vm_rawmap_2m(int n,size_t vp,size_t pp);
+extern int vmm_initphy();
 
 #endif
 

@@ -132,6 +132,8 @@ struct mat{
 #define MAT_TYPE_END 4
 
 #define MEMORY_MAT (*((volatile struct mat**)0x7c0a))
+#define MEMORY_PAGES ((MEMORY_MAT->memsize)/4096)
+#define VM_KERNEL (((MEMORY_PAGES*4096-1+0x8000000000)/0x8000000000)*0x8000000000)
 
 s64 matfind(void *addr)
 {

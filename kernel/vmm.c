@@ -152,11 +152,65 @@ int vmm_init_raw(int n){
 		}
 	}
 
-	vi[n].pagetable[0]=GET_PAGE(*((u64*)0x50000))|3;
+	if(n==0)vmm_initphy();
+	else{
+		for(i=0;i<VM_KERNEL/0x8000000000;i++)
+			vi[n].pagetable[i]=GET_PAGE(vi[0].pagetable[i])|3;
+	}
 
 	return 1;
 }
 
 struct vminfo *getvminfo(int n){
 	return &vi[n];
+}
+
+int vm_rawmap_2m(int n,size_t vp,size_t pp){
+	if(vp>=VM_KERNEL)return 0;
+	pp=(pp/0x200000)*0x200000;
+
+	size_t i1=vp/0x8000000000;
+	vp-=i1*0x8000000000;
+	size_t i2=vp/0x40000000;
+	vp-=i2*0x40000000;
+	size_t i3=vp/0x200000;
+	
+	if(vi[n].pagetable==NULL){
+		vi[n].pagetable=pmm_alloc();
+		if(vi[n].pagetable==NULL)return 0;
+		memset(vi[n].pagetable,0,4096);
+	}
+
+	u64 *p=(u64*)GET_PAGE(vi[n].pagetable[i1]),*q;
+	if(p==NULL){
+		p=vi[n].pagetable[i1]=pmm_alloc();
+		if(p==NULL)return 0;
+		vi[n].pagetable[i1]|=3;
+		memset(p,0,4096);
+	}
+
+	if((u64*)p[i2]==NULL){
+		q=p[i2]=pmm_alloc();
+		if(q==NULL)return 0;
+		p[i2]|=3;
+		p=q;
+		memset(p,0,4096);
+	}else{
+		p=GET_PAGE(p[i2]);
+	}
+
+	p[i3]=pp|0x83;
+	return 1;
+}
+
+int vmm_initphy(){
+	size_t pages=(((*PMM_STACK)[1]*4096-1+0x200000)/0x200000)*0x200000;
+	size_t p=0;
+
+	for(;p<pages;p+=0x200000){
+		if(!vm_rawmap_2m(0,p,p))
+			return 0;
+	}
+
+	return 1;
 }

@@ -132,6 +132,7 @@ void main()
 			}
 
 			void *kernel=calloc_align(1,*(size_t*)ksize,2*1024*1024);
+			*(((u64*)0x50000)+VM_KERNEL/0x8000000000)=0x51000|3;
 			*((u64*)0x52000)=((size_t)kernel)|0x83;
 			free(ksize);
 			if(!kernel)error("Cannot allocate memory for kernel.",1);
@@ -146,10 +147,10 @@ void main()
 				free(kernel);
 				continue;
 			}
-			
+
 			drivestop();
 			*((u64*)kernel)=kernel;
-			((void(*)())(0x8000000000+sizeof(size_t)))();
+			((void(*)())(VM_KERNEL+sizeof(size_t)))();
 		}
 	}
 

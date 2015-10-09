@@ -6,11 +6,6 @@
 #include "defines.h"
 #include "vmm.h"
 
-//#define NALLOC 4096
-
-//extern int brk(int n,void *addr);
-//extern void *sbrk(int n,size_t increment);
-
 typedef struct memory_header_t{
 	struct memory_header_t *ptr;
 	size_t size;
