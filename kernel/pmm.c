@@ -30,19 +30,23 @@ size_t *pmm_init(){
 	return page_stack;
 }
 
+int pmm_lock;
+
 void *pmm_alloc(){
-	//todo: lock
+	spinlock_acquire(&pmm_lock);
 	size_t *page_stack=*PMM_STACK;
 	if(*page_stack!=0){
 		void *ret=page_stack[((*page_stack)--)+1];
+		spinlock_release(&pmm_lock);
 		return ret;
 	}else{
+		spinlock_release(&pmm_lock);
 		return NULL;
 	}
 }
 
 void pmm_free(void *p){
-	//todo: lock
+	spinlock_acquire(&pmm_lock);
 	if(p==NULL)return;
 	
 	size_t pt=p;
@@ -50,4 +54,6 @@ void pmm_free(void *p){
 	size_t *page_stack=*PMM_STACK;
 	(*page_stack)++;
 	page_stack[(*page_stack)+1]=pt;
+	
+	spinlock_release(&pmm_lock);
 }

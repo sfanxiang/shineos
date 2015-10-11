@@ -5,6 +5,7 @@
 
 #include "defines.h"
 #include "early_memory.h"
+#include "spinlock.h"
 #include "vmm.h"
 
 #define PMM_STACK ((size_t**)0x7000)
