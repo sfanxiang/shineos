@@ -9,10 +9,7 @@ int alloc_block(int n,memory_header* h){
 	size_t op=p;
 	for(;p<((size_t)h)+h->size;p+=4096){
 		if(vm_getphypage(n,p)!=NULL){
-			char str[30];
-			puts("memory.c: warning: page already has physical address: ");
-			puts(itoa(p,str,16));
-			putchar('\n');
+			printf("memory.c: warning: page %lx already has physical address\n",(size_t)p);
 			op=p+4096;
 			continue;
 		}
@@ -35,8 +32,9 @@ int alloc_block(int n,memory_header* h){
 	return 1;
 }
 
-void *malloc(int n,size_t bytes){
+void *malloc(size_t bytes){
 	if(bytes==0)return NULL;
+	int n=MP_PROCESSOR_INFO->n;
 
 	size_t alloc=bytes+sizeof(memory_header);
 	alloc=((alloc-1)/sizeof(memory_header)+1)*sizeof(memory_header);
@@ -69,10 +67,10 @@ void *malloc(int n,size_t bytes){
 	}
 }
 
-void *calloc(int n,size_t nmemb, size_t size){
+void *calloc(size_t nmemb, size_t size){
 	size_t s=nmemb*size;
 	if(s==0)return NULL;
-	void *ptr=malloc(n,s);
+	void *ptr=malloc(s);
 	if(ptr==NULL)
 		return NULL;
 	else{
@@ -90,9 +88,10 @@ void free_block(int n,memory_header *h){
 	}
 }
 
-void free(int n,void *pt){
+void free(void *pt){
 	if(pt==NULL)return;
-	
+	int n=MP_PROCESSOR_INFO->n;
+
 	memory_header *h=pt;
 	h--;
 
@@ -128,7 +127,7 @@ void free(int n,void *pt){
 }
 
 int initmemory(int n){
-	freep[n]=get_phy_kernel_end()-get_phy_kernel_start()+VM_KERNEL;
+	freep[n]=((size_t)get_phy_kernel_end()-(size_t)get_phy_kernel_start()+VM_KERNEL_CODE-1+4096)/4096*4096;
 	void *p=pmm_alloc();
 	if(p==NULL)return 0;
 	if(vm_map(n,freep[n],p)==0)return 0;

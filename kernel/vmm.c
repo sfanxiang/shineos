@@ -147,7 +147,7 @@ int vmm_init_raw(int n){
 	for((p=(size_t)get_phy_kernel_start()),(i=0);
 		p<(size_t)get_phy_kernel_end();
 		(p+=4096),(i+=4096)){
-		if(!vm_rawmap(n,VM_KERNEL+i,p)){
+		if(!vm_rawmap(n,VM_KERNEL_CODE+i,p)){
 			return 0;
 		}
 	}
@@ -157,6 +157,11 @@ int vmm_init_raw(int n){
 		for(i=0;i<VM_KERNEL/0x8000000000;i++)
 			vi[n].pagetable[i]=GET_PAGE(vi[0].pagetable[i])|3;
 	}
+
+	processor_info *pi=pmm_alloc();
+	if(pi==NULL)return 0;
+	if(!vm_rawmap(n,MP_PROCESSOR_INFO,pi))return 0;
+	pi->n=n;
 
 	return 1;
 }

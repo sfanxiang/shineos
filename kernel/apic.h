@@ -92,7 +92,7 @@ struct apic_lvt{
 extern u64 apicread(u32 reg);
 extern void apicwrite(u32 reg,u64 val);
 extern void sendeoi();
-extern u8 initapic(u32 processor);
+extern u8 initapic();
 
 #endif
 

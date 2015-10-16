@@ -1,9 +1,10 @@
-#include "pmm.h"
 #include "apic.h"
 #include "interrupt.h"
 #include "misc.h"
 #include "mp.h"
 #include "paging.h"
+#include "pmm.h"
+#include "stdio.h"
 
 void kmain()
 {
@@ -12,18 +13,14 @@ void kmain()
 	if(!vmm_init(0))
 		error("Failed initializing VMM.",1);
 	initmemory(0);
-	if(!initinterrupt(0))
+	if(!initinterrupt())
 		error("Failed initializing interrupt.",1);
-	if(!initapic(0))
+	if(!initapic())
 		error("Failed initializing APIC.",1);
 	if(!initacpi())
 		error("Failed initializing ACPI.",1);
 	initmp();
 
-	char buf[20];
-	puts("Initialized ");
-	puts(itoa(getprocessorcount(),buf,10));
-	puts(" processor(s).\n");
-
+	printf("Initialized %d processor(s).\n",getprocessorcount());
 	haltcpu();
 }

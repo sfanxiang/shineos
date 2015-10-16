@@ -7,14 +7,16 @@ struct idt_ptr *idtr[255];
 extern void* getinthandler_base();
 extern size_t getinthandler_base_size();
 
-u8 buildinterrupt(u16 count,u32 processor)
+u8 buildinterrupt(u16 count)
 {
-	idtr[processor]=malloc(processor,sizeof(struct idt_ptr));
+	int processor=MP_PROCESSOR_INFO->n;
+
+	idtr[processor]=malloc(sizeof(struct idt_ptr));
 	if(!idtr[processor])return 0;
-	idtr[processor]->base=calloc(processor,count,sizeof(struct idt_desc));
+	idtr[processor]->base=calloc(count,sizeof(struct idt_desc));
 	if(!(idtr[processor]->base))
 	{
-		free(processor,idtr[processor]);
+		free(idtr[processor]);
 		idtr[processor]=NULL;
 		return 0;
 	}
@@ -24,15 +26,17 @@ u8 buildinterrupt(u16 count,u32 processor)
 	return 1;
 }
 
-u8 registerinterrupt(u16 num,u32 processor,void(*handler)
+u8 registerinterrupt(u16 num,void(*handler)
                      (u16 num,u16 ss,u64 rsp,u64 rflags,
                       u16 cs,u64 rip,u64 errorcode),u8 haserrcode)
 {
+	int processor=MP_PROCESSOR_INFO->n;
+
 	if(!idtr[processor]||!(idtr[processor]->base))return 0;
 	if((idtr[processor]->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if(isinterruptregistered(num,processor))return 0;
 	
-	void* handler_base=malloc(processor,getinthandler_base_size());
+	void* handler_base=malloc(getinthandler_base_size());
 	if(!handler_base)return 0;
 
 	memcpy(handler_base,getinthandler_base(),getinthandler_base_size());
@@ -50,13 +54,15 @@ u8 registerinterrupt(u16 num,u32 processor,void(*handler)
 	return 1;
 }
 
-u8 unregisterinterrupt(u16 num,u32 processor)
+u8 unregisterinterrupt(u16 num)
 {
+	int processor=MP_PROCESSOR_INFO->n;
+
 	if(!idtr[processor]||!(idtr[processor]->base))return 0;
 	if((idtr[processor]->limit+1)/sizeof(struct idt_desc)<=num)return 0;
 	if(!isinterruptregistered(num,processor))return 0;
 
-	free(processor,((size_t)((idtr[processor]->base+num)->off_hi))<<16+(idtr[processor]->base+num)->off_lo-8-2-1);
+	free(((size_t)((idtr[processor]->base+num)->off_hi))<<16+(idtr[processor]->base+num)->off_lo-8-2-1);
 	memset(idtr[processor]->base+num,0,sizeof(struct idt_desc));
 	return 1;
 }
@@ -71,48 +77,44 @@ u8 isinterruptregistered(u16 num,u32 processor)
 void exceptionhandler(u16 num,u16 ss,u64 rsp,u64 rflags,u16 cs,u64 rip,u64 errorcode)
 {
 	char buf[20];
-	message("Exception!");
-	puts("vector=");
-	puts(itoa(num,buf,10));
-	puts(",ss=0x");
-	puts(itoa(ss,buf,16));
-	puts(",rsp=0x");
-	puts(itoa(rsp,buf,16));
-	puts(",rflags=0x");
-	puts(itoa(rflags,buf,16));
-	puts(",cs=0x");
-	puts(itoa(cs,buf,16));
-	puts(",rip=0x");
-	puts(itoa(rip,buf,16));
-	puts(",error=0x");
-	puts(itoa(errorcode,buf,16));
-	puts("\nStopped.\n");
+	if(num==3)
+		message("Debug:");
+	else
+		message("Exception!");
+	int n=MP_PROCESSOR_INFO->n;
+	printf("processor=%d,vector=%u,ss=0x%lx,rsp=0x%lx,rflags=0x%lx,cs=0x%x,rip=0x%lx,error=0x%lx\n",
+	       n,(unsigned int)num,(unsigned int)ss,rsp,rflags,(unsigned int)cs,rip,errorcode);
 
-	//todo: broadcast exception
-	disable_int();
-	haltcpu();
+	if(num!=3){
+		puts("Stopped.\n");
+		//todo: broadcast exception
+		disable_int();
+		haltcpu();
+	}
+	
+	return;
 }
 
-u8 initinterrupt(u32 processor)
+u8 initinterrupt()
 {
-	if(!buildinterrupt(0xff,processor))return 0;
+	if(!buildinterrupt(0xff))return 0;
 	u16 i;
 	for(i=0;i<=7;i++)
 	{
-		if(!registerinterrupt(i,processor,exceptionhandler,0))
+		if(!registerinterrupt(i,exceptionhandler,0))
 			return 0;
 	}
-	if(!registerinterrupt(8,processor,exceptionhandler,1))return 0;
-	if(!registerinterrupt(9,processor,exceptionhandler,0))return 0;
+	if(!registerinterrupt(8,exceptionhandler,1))return 0;
+	if(!registerinterrupt(9,exceptionhandler,0))return 0;
 	for(i=10;i<=14;i++)
 	{
-		if(!registerinterrupt(i,processor,exceptionhandler,1))
+		if(!registerinterrupt(i,exceptionhandler,1))
 			return 0;
 	}
-	if(!registerinterrupt(16,processor,exceptionhandler,0))return 0;
-	if(!registerinterrupt(17,processor,exceptionhandler,1))return 0;
-	if(!registerinterrupt(18,processor,exceptionhandler,0))return 0;
-	if(!registerinterrupt(19,processor,exceptionhandler,0))return 0;
+	if(!registerinterrupt(16,exceptionhandler,0))return 0;
+	if(!registerinterrupt(17,exceptionhandler,1))return 0;
+	if(!registerinterrupt(18,exceptionhandler,0))return 0;
+	if(!registerinterrupt(19,exceptionhandler,0))return 0;
 
 	return 1;
 }

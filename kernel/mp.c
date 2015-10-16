@@ -122,14 +122,14 @@ void apmain()
 {
 	u32 processor=MP_AP_PROCESSOR;
 
-	//todo: error message
+	//todo: error messages
 	initmemory(processor);
-	void *stack=malloc(processor,65536);
+	void *stack=malloc(65536);
 	if(stack!=NULL){
 		setstack(MP_AP_STACK,stack+65536,4096);
 	}
-	initinterrupt(processor);
-	initapic(processor);
+	initinterrupt();
+	initapic();
 
 	MP_AP_READY=1;
 	haltcpu();

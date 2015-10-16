@@ -20,7 +20,7 @@ void error(char *msg,u8 halt)
 	message(msg);
 	if(halt)
 	{
-		message("stopped");
+		message("Stopped.");
 		disable_int();
 		haltcpu();
 	}

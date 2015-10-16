@@ -38,6 +38,7 @@ inthandler_base_skiperrcode:
 	mov r8w,[rbp+24]
 	mov r9,[rbp+16]
 	push qword ptr [rbp+8]
+	mov eax,0
 	call qword ptr inthandler_base_handler[rip]
 	add rsp,8
 	pop r11
