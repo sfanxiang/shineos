@@ -19,5 +19,5 @@ _start:
 	jmp kmain
 
 .section .stack,"aw",@nobits
-.skip 65536
+.skip 8192*1024
 stack_top:

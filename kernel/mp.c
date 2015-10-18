@@ -97,7 +97,10 @@ u32 initmp()
 				if(MP_AP_START)
 				{
 					while(!MP_AP_READY);
-					if(!vmm_init_raw(processor_cnt))return processor_cnt;
+					if(!vmm_init_raw(processor_cnt)){
+						writecmos(0xf,0);
+						return processor_cnt;
+					}
 					MP_AP_PAGETABLE=getvminfo(processor_cnt)->pagetable;
 				}
 				else
@@ -110,6 +113,7 @@ u32 initmp()
 		madtent=(void*)madtent+madtent->len;
 	}
 
+	writecmos(0xf,0);
 	return processor_cnt;	
 }
 
@@ -124,9 +128,9 @@ void apmain()
 
 	//todo: error messages
 	initmemory(processor);
-	void *stack=malloc(65536);
+	void *stack=malloc(8192*1024);
 	if(stack!=NULL){
-		setstack(MP_AP_STACK,stack+65536,4096);
+		setstack(MP_AP_STACK,stack+8192*1024,4096);
 	}
 	initinterrupt();
 	initapic();

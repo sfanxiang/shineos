@@ -33,6 +33,7 @@ size_t *pmm_init(){
 int pmm_lock;
 
 void *pmm_alloc(){
+	//todo: deadlock
 	spinlock_acquire(&pmm_lock);
 	size_t *page_stack=*PMM_STACK;
 	if(*page_stack!=0){

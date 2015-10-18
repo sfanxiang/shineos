@@ -133,7 +133,14 @@ void main()
 
 			void *kernel=calloc_align(1,*(size_t*)ksize,2*1024*1024);
 			*(((u64*)0x50000)+VM_KERNEL/0x8000000000)=0x51000|3;
-			*((u64*)(0x52000+8))=((size_t)kernel)|0x83;
+
+			u64 *pvkernel;u64 pagecnt=0;
+			for(pvkernel=(u64*)0x52000+1;
+			    pvkernel<(u64*)0x52000+(*(size_t*)ksize-1)/4096/512+2;
+			    pvkernel++,pagecnt++){
+				*pvkernel=((size_t)kernel+pagecnt*4096*512)|0x83;
+			}
+
 			free(ksize);
 			if(!kernel)error("Cannot allocate memory for kernel.",1);
 			

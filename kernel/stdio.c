@@ -1,5 +1,7 @@
 #include "stdio.h"
 
+//todo: define stdout stuff
+
 int putchar_lock;
 
 void putchar_unlocked(char chr)
@@ -22,20 +24,22 @@ void putchar_unlocked(char chr)
 
 void putchar(char chr)
 {
+	int ifstate=((getcpuflags()&CPU_FLAGS_IF)!=0);
+	if(ifstate)disable_int();
 	spinlock_acquire(&putchar_lock);
 	putchar_unlocked(chr);
 	spinlock_release(&putchar_lock);
+	if(ifstate)enable_int();
 }
 
 void puts(char* str)
 {
-	spinlock_acquire(&putchar_lock);
+	//adding a lock may cause deadlock
 	while(*str)
 	{
-		putchar_unlocked(*str);
+		putchar(*str);
 		str++;
 	}
-	spinlock_release(&putchar_lock);
 }
 
 int vsnprintf(char *str, size_t size, const char *format, va_list ap){
